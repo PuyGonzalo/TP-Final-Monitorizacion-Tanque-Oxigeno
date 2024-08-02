@@ -18,9 +18,11 @@
 /**
  * @brief TODO: Completar
  */
-typedef enum pressure_state {
+typedef enum tank_state {
   TANK_LEVEL_OK = 0,
-  TANK_LEVEL_LOW = 1,
+  NO_TANK_SETTINGS = 1,
+  TANK_SETTINGS_OK = 2,
+  TANK_LEVEL_LOW = 3,
 } tank_state_t;
 
 /**
@@ -48,6 +50,7 @@ class TankMonitor {
    * @brief Initializes Pressure Monitor Module
    * @param gas_flow Actual gas flow used on the tank. Must be provided by the user through TelegramBot.
    * @param tank_capacity Capacity of the tank. Must be provided by the user through TelegramBot.
+   * @param fp Function pointer to the callback.
    */
   void init(const float gas_flow, const float tank_capacity, tm_function_callback fp);
 

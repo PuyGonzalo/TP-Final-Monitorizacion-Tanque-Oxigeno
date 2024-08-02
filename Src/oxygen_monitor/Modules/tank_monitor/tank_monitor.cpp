@@ -6,6 +6,7 @@
  *******************************************************************************/
 
 #include "tank_monitor.h"
+#include <cstdio>
 
 //===========================[Private Variables]=================================
 
@@ -19,12 +20,23 @@ void TankMonitor::init(const float gas_flow, const float tank_capacity, tm_funct
 
   this->gas_flow = gas_flow;
   this->tank_capacity = tank_capacity;
-  callback = fp;
+  this->callback = fp;
+
 }
 
 TankMonitor::TankMonitor()
 {
-  tank_state = TANK_LEVEL_OK;
+  this->tank_state = NO_TANK_SETTINGS;
+}
+
+tank_state_t TankMonitor::update()
+{
+  pressure_sensor.update();
+  float last_reading = pressure_sensor.get_last_reading();
+  HAL_Delay(2000);
+  printf("\r\n Esto llega aca jojo\r\n");
+  printf("\r\n El valor actual es: %f", last_reading);
+  return TANK_LEVEL_OK;
 }
 
 }; // namespace Module
