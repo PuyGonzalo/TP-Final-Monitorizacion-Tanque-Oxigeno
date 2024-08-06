@@ -12,6 +12,7 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
+#define TEMP_THRESHOLD 23.5f //TODO: Cambiar 
 
 //===========================[Module Types]=====================================
 
@@ -20,9 +21,7 @@
  */
 typedef enum tank_state {
   TANK_LEVEL_OK = 0,
-  NO_TANK_SETTINGS = 1,
-  TANK_SETTINGS_OK = 2,
-  TANK_LEVEL_LOW = 3,
+  TANK_LEVEL_LOW = 1,
 } tank_state_t;
 
 /**

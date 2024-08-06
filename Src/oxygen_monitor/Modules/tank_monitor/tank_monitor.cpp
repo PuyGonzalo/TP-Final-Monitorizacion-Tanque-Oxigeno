@@ -26,16 +26,21 @@ void TankMonitor::init(const float gas_flow, const float tank_capacity, tm_funct
 
 TankMonitor::TankMonitor()
 {
-  this->tank_state = NO_TANK_SETTINGS;
+  this->tank_state = TANK_LEVEL_OK;
+  this->gas_flow = 0;
+  this->tank_capacity = 0;
+  this->callback = nullptr;
 }
 
 tank_state_t TankMonitor::update()
 {
   pressure_sensor.update();
   float last_reading = pressure_sensor.get_last_reading();
-  HAL_Delay(2000);
-  printf("\r\n Esto llega aca jojo\r\n");
-  printf("\r\n El valor actual es: %f", last_reading);
+
+  if (last_reading < TEMP_THRESHOLD) {
+
+    callback();
+  }
   return TANK_LEVEL_OK;
 }
 
