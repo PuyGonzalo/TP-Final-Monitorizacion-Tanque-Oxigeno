@@ -148,7 +148,7 @@ namespace Module {
   {
     if (params.size() == 1) {
       _registerTankId(botLastMessage.fromId);
-      return _formatString("Tank with ID: %s\nregistered correctly", botLastMessage.fromId.c_str());
+      return _formatString("Tank with ID: %s\nregistered correctly\n Please enter the /newTank command to continue.", botLastMessage.fromId.c_str());
     }
 
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
@@ -196,5 +196,5 @@ namespace Module {
 
   }
 
-  
+
 } // namespace Module
