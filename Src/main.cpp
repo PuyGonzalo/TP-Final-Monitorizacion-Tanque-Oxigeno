@@ -3,7 +3,7 @@
 #include "oxygen_monitor.h"
 #include <cstdio>
 
-// main() runs in its own thread in the OS
+
 int main() 
 {
   Module::OxygenMonitor::init();
@@ -11,7 +11,6 @@ int main()
   while (true)
   {
     Module::OxygenMonitor::getInstance().update();
-    
   }
 
 }

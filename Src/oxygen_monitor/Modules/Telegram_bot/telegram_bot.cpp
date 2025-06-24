@@ -19,6 +19,8 @@
 #include <vector>
 #include <ArduinoJson.h>
 
+//=====[Declaration and initialization of private global variables]============
+
 static Timeout tBotTimeout;
 static bool isTimeoutFinished;
 
@@ -27,6 +29,8 @@ static bool isAlertTimeoutFinished;
 
 static void onTBotTimeoutFinishedCallback();
 static void onAlertTimeoutFinishedCallback();
+
+//=====[Implementations of public functions]===================================
 
 namespace Module {
 
@@ -119,12 +123,9 @@ namespace Module {
         }
         else if (Drivers::WifiCom::getInstance().getPostResponse(&botResponse)) {
           const bool isNewMessage = _getMessageFromResponse(&botLastMessage, botResponse);
-          isNewMessage ? printf("isNewMessage: TRUE\r\n") : printf("isNewMessage: FALSE\r\n"); 
           if (isNewMessage) {
-            printf("Seteo Process last message\r\n");
             botState = PROCESS_LAST_MESSAGE;
           } else {
-            printf("Vuelvo a INIT!!\r\n");
             botState = INIT;
           }
         }
@@ -133,7 +134,6 @@ namespace Module {
 
       case PROCESS_LAST_MESSAGE:
       {
-        printf("Entro a Process last message\r\n");
         std::string messegeToSend;
         std::vector<std::string> params = _parseMessage(botLastMessage.message);
         std::string command = params[0];
@@ -145,9 +145,7 @@ namespace Module {
             messegeToSend = (this->*functionsArray[command_nb])(params);
           }else {
             messegeToSend = _formatString(ERROR_INVALID_COMMAND_STR, command.c_str());
-            printf("No se encontró el comando\r\n");
           }
-          
         } else {
           messegeToSend = _formatString(ERROR_INVALID_USER_STR, botLastMessage.fromName.c_str());
         }
@@ -445,6 +443,12 @@ namespace Module {
     return result;
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   bool TelegramBot::_isStringNumeric(const std::string &str)
   {
     return str.find_first_not_of( "0123456789" ) == string::npos;
@@ -453,11 +457,17 @@ namespace Module {
 
 } // namespace Module
 
+/**
+* @brief 
+*/
 static void onTBotTimeoutFinishedCallback()
 {
   isTimeoutFinished = true;
 }
 
+/**
+* @brief 
+*/
 static void onAlertTimeoutFinishedCallback()
 {
   isTimeoutFinished = true;

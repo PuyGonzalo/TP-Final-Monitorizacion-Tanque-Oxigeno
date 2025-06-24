@@ -1,3 +1,11 @@
+/******************************************************************************//**
+ * @file telegram_bot_lib.h
+ * @author Gonzalo Puy.
+ * @date Aug 2024
+ * @brief Telegram Bot Lib.
+ *
+ *******************************************************************************/
+
 #ifndef TELEGRAM_BOT_LIB_H
 #define TELEGRAM_BOT_LIB_H
 

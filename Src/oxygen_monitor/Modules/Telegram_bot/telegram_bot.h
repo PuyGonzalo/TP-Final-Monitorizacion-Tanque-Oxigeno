@@ -29,23 +29,43 @@
 #define MAX_USER_COUNT 10
 #define MAX_ALERT_LIMIT 10
 
-//typedef void (*botFunctionCallback)();
-
 namespace Module {
 
   class TelegramBot {
 
     public:
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       TelegramBot(const char *apiUrl, const char *token);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       ~TelegramBot() = default;
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       void init();
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       void update();
-
-      //void send_alert(); Funcion que simplemente ponga botState = SEND_ALERT, llame a update(); y setee un timer del RTC para reenviar la alerta despues de x minutos
 
     private:
 
@@ -75,22 +95,76 @@ namespace Module {
       std::string _commandNewGasFlow(const std::vector<std::string> &params);
       std::string _commandEnd(const std::vector<std::string> &params);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       bool _registerUser(std::string userId);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       bool _unregisterUser(std::string oldUserId);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       bool _isUserIdValid(std::string tankId);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       std::string _getUserId();
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       std::vector<std::string> _parseMessage(const std::string &message);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       void _sendMessage(const std::string chatId, const std::string message);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       void _requestLastMessage();
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       bool _getMessageFromResponse(telegram_Message *message, const std::string &response);
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       command_t _findCommand(const std::string command);
 
       /**
@@ -102,6 +176,12 @@ namespace Module {
       */
       std::string _formatString(const char* format, ... );
 
+      /**
+      * @brief
+      * @note
+      * @param
+      * @return
+      */
       bool _isStringNumeric(const std::string &str);
 
       bot_state_t botState;
