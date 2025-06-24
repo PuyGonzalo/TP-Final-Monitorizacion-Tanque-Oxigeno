@@ -4,7 +4,9 @@
  * @date Aug 2024
  * @brief Telegram Bot Module header file.
  *
- *******************************************************************************/
+ * This file defines the TelegramBot class used to interact with the Telegram Bot API.
+ * It handles sending/receiving messages, managing users, and processing commands.
+ ******************************************************************************/
 
 #ifndef TELEGRAM_BOT_H
 #define TELEGRAM_BOT_H
@@ -69,131 +71,66 @@ namespace Module {
 
     private:
 
+      /**
+      * @brief Type for command function pointers.
+      */
       typedef std::string (TelegramBot::*commandFunction)(const std::vector<std::string> &params);
 
+      /**
+       * @struct telegram_Message
+       * @brief Represents a message received from Telegram.
+       */
       struct telegram_Message {
-        unsigned long updateId;
-        std::string fromId;
-        std::string fromUserName;
-        std::string fromName;
-        std::string message;
+        unsigned long updateId;     /**< The update ID from Telegram. */
+        std::string fromId;         /**< The sender's Telegram user ID. */
+        std::string fromUserName;   /**< The sender's username. */
+        std::string fromName;       /**< The sender's first name. */
+        std::string message;        /**< The message text. */
       };
 
+      /**
+       * @enum BOT_STATE
+       * @brief Possible states of the bot's internal state machine.
+       */
       typedef enum BOT_STATE {
-        INIT,
-        MONITOR,
-        SEND_ALERT,
-        REQUEST_LAST_MESSAGE,
-        WAITING_LAST_MESSAGE,
-        PROCESS_LAST_MESSAGE,
-        WAITING_RESPONSE,
+        INIT,                   /**< Initial state. */
+        MONITOR,                /**< Monitoring state. */
+        SEND_ALERT,             /**< State to send alerts. */
+        REQUEST_LAST_MESSAGE,   /**< State to request last message. */
+        WAITING_LAST_MESSAGE,   /**< Waiting for last message. */
+        PROCESS_LAST_MESSAGE,   /**< Processing the received message. */
+        WAITING_RESPONSE,       /**< Waiting for API response. */
       } bot_state_t;
 
+      // Command Handlers
       std::string _commandStart(const std::vector<std::string> &params);
       std::string _commandNewTank(const std::vector<std::string> &params);
       std::string _commandTankStatus(const std::vector<std::string> &params);
       std::string _commandNewGasFlow(const std::vector<std::string> &params);
       std::string _commandEnd(const std::vector<std::string> &params);
 
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       bool _registerUser(std::string userId);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       bool _unregisterUser(std::string oldUserId);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       bool _isUserIdValid(std::string tankId);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       std::string _getUserId();
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       std::vector<std::string> _parseMessage(const std::string &message);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       void _sendMessage(const std::string chatId, const std::string message);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       void _requestLastMessage();
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       bool _getMessageFromResponse(telegram_Message *message, const std::string &response);
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       command_t _findCommand(const std::string command);
-
-      /**
-      * @brief Format a string according to the provided format.
-      * @note This implementation was obtained from <a href="https://stackoverflow.com/a/49812018">here</a>.
-      * @param format The format string.
-      * @param ... Additional arguments for formatting.
-      * @return The formatted string.
-      */
       std::string _formatString(const char* format, ... );
-
-      /**
-      * @brief
-      * @note
-      * @param
-      * @return
-      */
       bool _isStringNumeric(const std::string &str);
 
-      bot_state_t botState;
-      const std::string botToken;
-      const std::string botUrl;
-      unsigned long botLastUpdateId;
-      std::vector<std::string> userId;
-      int userCount;
-      telegram_Message botLastMessage;
-      std::string botResponse;
-      commandFunction functionsArray[NB_COMMANDS];
-      Util::Delay         botDelay;
+      bot_state_t botState;                           /**< Current bot state. */
+      const std::string botToken;                     /**< Bot API token. */
+      const std::string botUrl;                       /**< Bot API URL. */
+      unsigned long botLastUpdateId;                  /**< ID of the last processed update. */
+      std::vector<std::string> userId;                /**< List of registered user IDs. */
+      int userCount;                                  /**< Number of registered users. */
+      telegram_Message botLastMessage;                /**< Last received message. */
+      std::string botResponse;                        /**< Last response from API. */
+      commandFunction functionsArray[NB_COMMANDS];    /**< Command dispatch table. */
+      Util::Delay botDelay;                           /**< Delay utility for timing. */
 
   }; //TelegramBot class
 

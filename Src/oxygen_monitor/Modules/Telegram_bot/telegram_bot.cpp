@@ -21,11 +21,11 @@
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout tBotTimeout;
-static bool isTimeoutFinished;
+static Timeout tBotTimeout;                   /**<  */
+static bool isTimeoutFinished;                /**<  */
 
-static Timeout alertTimeout;
-static bool isAlertTimeoutFinished;
+static Timeout alertTimeout;                  /**<  */
+static bool isAlertTimeoutFinished;           /**<  */
 
 static void onTBotTimeoutFinishedCallback();
 static void onAlertTimeoutFinishedCallback();
@@ -171,8 +171,14 @@ namespace Module {
     }
   }
 
-  // PRIVADO
+//=====[Implementations of public functions]===================================
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::string TelegramBot::_commandStart(const std::vector<std::string> &params)
   {
     if (params.size() == 1) {
@@ -194,6 +200,12 @@ namespace Module {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::string TelegramBot::_commandNewTank(const std::vector<std::string> &params)
   {
     if (params.size() == 3) {
@@ -228,16 +240,34 @@ namespace Module {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::string TelegramBot::_commandTankStatus(const std::vector<std::string> &params)
   {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::string TelegramBot::_commandNewGasFlow(const std::vector<std::string> &params)
   {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::string TelegramBot::_commandEnd(const std::vector<std::string> &params)
   {
     if (params.size() == 1) {
@@ -256,6 +286,12 @@ namespace Module {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   bool TelegramBot::_registerUser(std::string newUserId)
   {
     bool userFound = _isUserIdValid(newUserId);
@@ -272,6 +308,12 @@ namespace Module {
     return false;
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   bool TelegramBot::_unregisterUser(std::string oldUserId)
   {
     std::vector<std::string>::iterator it = std::find(userId.begin(), userId.end(), oldUserId);
@@ -286,6 +328,12 @@ namespace Module {
     
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   bool TelegramBot::_isUserIdValid(std::string fUserId)
   {
     std::vector<std::string>::iterator it = std::find(userId.begin(), userId.end(), fUserId);
@@ -303,6 +351,12 @@ namespace Module {
     return USER_ID;
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   std::vector<std::string> TelegramBot::_parseMessage(const std::string &message)
   {
     std::vector<std::string> params;
@@ -328,6 +382,12 @@ namespace Module {
     return params;
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   void TelegramBot::_sendMessage(const std::string chatId, const std::string message)
   {
     std::string server = botUrl + botToken + "/sendmessage";
@@ -336,6 +396,12 @@ namespace Module {
     Drivers::WifiCom::getInstance().post(server, request);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   void TelegramBot::_requestLastMessage()
   {
     std::string server = botUrl + botToken + "/getUpdates";
@@ -343,6 +409,12 @@ namespace Module {
     Drivers::WifiCom::getInstance().post(server, request);
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   bool TelegramBot::_getMessageFromResponse(telegram_Message *message, const std::string &response)
   {
     std::string fixedResponse = response;
@@ -407,6 +479,12 @@ namespace Module {
     return true;
   }
 
+  /**
+  * @brief 
+  * @note 
+  * @param 
+  * @return
+  */
   command_t TelegramBot::_findCommand(const std::string command)
   {
     if (command == "/start") {
@@ -424,6 +502,13 @@ namespace Module {
     return ERROR_INVALID_COMMAND;
   }
 
+  /**
+  * @brief Format a string according to the provided format.
+  * @note This implementation was obtained from <a href="https://stackoverflow.com/a/49812018">here</a>.
+  * @param format The format string.
+  * @param ... Additional arguments for formatting.
+  * @return The formatted string.
+  */
   std::string TelegramBot::_formatString(const char* format, ...)
   {
     va_list args;
