@@ -1,8 +1,11 @@
-/********************************************************************************
- * @file pressure_monitor.cpp
- * @brief Pressure monitor module.
+/****************************************************************************//**
+ * @file tank_monitor.cpp
  * @author Gonzalo Puy.
  * @date Jun 2024
+ * @brief Tank level monitor module. Implemented with singleton design pattern
+          in order to ensure only one instance of the object TankMonitor.
+          More info <a href="https://stackoverflow.com/a/1008289">available here</a>.
+
  *******************************************************************************/
 
 #include "tank_monitor.h"
@@ -42,6 +45,11 @@ tank_state_t TankMonitor::update()
     callback();
   }
   return TANK_LEVEL_OK;
+}
+
+tank_state_t TankMonitor::getTankState()
+{
+  return TANK_LEVEL_LOW;
 }
 
 }; // namespace Module

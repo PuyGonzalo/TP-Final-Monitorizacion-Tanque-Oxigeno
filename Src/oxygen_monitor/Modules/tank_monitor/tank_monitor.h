@@ -1,8 +1,9 @@
-/********************************************************************************
+/****************************************************************************//**
  * @file tank_monitor.h
- * @brief Tank level monitor class header file.
  * @author Gonzalo Puy.
  * @date Jun 2024
+ * @brief Tank level monitor class header file.
+ *
  *******************************************************************************/
 
 #ifndef TANK_MONITOR_H
@@ -35,15 +36,14 @@ class TankMonitor {
  
  public:
 
- /**
-   * @brief Pressure Monitor Module constructor.
-   */
-  TankMonitor();
+  static TankMonitor& getInstance(){
+  static TankMonitor instance;
 
-  /**
-   * @brief Pressure Monitor Module destructor.
-   */
-  ~TankMonitor() = default;
+    return instance;
+  }
+  // Erase default C++ copy methods in order to avoid generating accidental copies of singleton.
+  TankMonitor(TankMonitor const&) = delete;
+  void operator=(TankMonitor const&);
   
   /**
    * @brief Initializes Pressure Monitor Module
@@ -59,7 +59,20 @@ class TankMonitor {
    */
   tank_state_t update();
 
+  tank_state_t getTankState();
+
  private:
+  
+   /**
+   * @brief Pressure Monitor Module constructor.
+   */
+  TankMonitor();
+
+  /**
+   * @brief Pressure Monitor Module destructor.
+   */
+  ~TankMonitor() = default;
+
   tank_state_t tank_state;
   float gas_flow;
   float tank_capacity;

@@ -16,16 +16,10 @@
 
 namespace Drivers {
 
-  WifiCom::WifiCom(PinName txPin, PinName rxPin, const int baudRate) : wifiSerial(txPin, rxPin, baudRate)
-  {
-  }
-
   void WifiCom::init()
   {
-    wifiState = INIT;
-    wifiSsid = WIFI_SSID;
-    wifiPassword = WIFI_PASSWORD;
-    wifiSerial.enable_output(true);
+    
+    getInstance()._init();
   }
 
   void WifiCom::update()
@@ -38,28 +32,31 @@ namespace Drivers {
 
       case INIT:
       {
-        //wifiState = CMD_STATUS_SEND; //Aca en realidad deberia solo iniciar el timer del RTC y en el callback de este cambiar el estado
-        //Timer con el RTC.
+        wifiState = CMD_STATUS_SEND;
+        wifiComDelay.Start(DELAY_3_SECONDS);
       }
       break;
       
       case CMD_STATUS_SEND:
       {
-        wifiResponse.clear();
-        esp32Command = COMMAND_STATUS_STR;
-        esp32Command += STOP_CHAR;
-        _sendCommand(esp32Command.c_str());
-        wifiState = CMD_STATUS_WAIT_RESPONSE;
-        //Volver a setear el timer del RTC. Posibleemente sea otro.
+        if (wifiComDelay.HasFinished()) {
+          wifiResponse.clear();
+          esp32Command = COMMAND_STATUS_STR;
+          esp32Command += STOP_CHAR;
+          _sendCommand(esp32Command.c_str());
+          wifiState = CMD_STATUS_WAIT_RESPONSE;
+          wifiComDelay.Start(DELAY_3_SECONDS);
+        }
+
       }
       break;
       
       case CMD_STATUS_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if( isResponseCompleted && (wifiResponse.compare(RESULT_NOT_CONNECTED)) == 0 ) {
-          wifiState = CMD_CONNECT_SEND; //Wifi no conectado, tratando de reconectar. Probablemente otro timer del RTC
-        }else if( isResponseCompleted && (wifiResponse.compare(RESULT_CONNECTED)) == 0 ) {
+        if( wifiComDelay.HasFinished() || (isResponseCompleted && (wifiResponse.compare(RESULT_NOT_CONNECTED) == 0)) ) {
+          wifiState = CMD_CONNECT_SEND; //Wifi no conectado, tratando de reconectar.
+        }else if( isResponseCompleted && (wifiResponse.compare(RESULT_CONNECTED) == 0) ) {
           wifiState = IDLE; //Wifi ya conectado.
         }
       }
@@ -67,24 +64,29 @@ namespace Drivers {
 
       case CMD_CONNECT_SEND:
       {
-        wifiResponse.clear();
-        esp32Command = COMMAND_CONNECT_STR;
-        esp32Command += PARAM_SEPARATOR_CHAR;
-        esp32Command += wifiSsid;
-        esp32Command += PARAM_SEPARATOR_CHAR;
-        esp32Command += wifiPassword;
-        esp32Command += STOP_CHAR;
-        _sendCommand(esp32Command.c_str());
-        //Iniciar Otro Timer del RTC o uno mismo, despues se ve.
+        if(wifiComDelay.HasFinished()) {
+          wifiResponse.clear();
+          esp32Command = COMMAND_CONNECT_STR;
+          esp32Command += PARAM_SEPARATOR_CHAR;
+          esp32Command += wifiSsid;
+          esp32Command += PARAM_SEPARATOR_CHAR;
+          esp32Command += wifiPassword;
+          esp32Command += STOP_CHAR;
+          _sendCommand(esp32Command.c_str());
+          wifiState = CMD_CONNECT_WAIT_RESPONSE;
+          wifiComDelay.Start(DELAY_10_SECONDS);
+        }
+        
       }
       break;
 
       case CMD_CONNECT_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if( isResponseCompleted && (wifiResponse.compare(RESULT_ERROR)) == 0 ) {
+        if( wifiComDelay.HasFinished() || (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0)) ) {
           wifiState = CMD_ACCESSPOINT_SEND;
-        } else if (isResponseCompleted && (wifiResponse.compare(RESULT_OK)) == 0) {
+          wifiComDelay.Start(DELAY_2_SECONDS);
+        } else if (isResponseCompleted && (wifiResponse.compare(RESULT_OK) == 0)) {
           wifiState = IDLE;
         }
       }
@@ -92,24 +94,29 @@ namespace Drivers {
 
       case CMD_ACCESSPOINT_SEND:
       {
-        esp32Command = COMMAND_ACCESSPOINT_STR;
-        esp32Command += STOP_CHAR;
-        _sendCommand(esp32Command.c_str());
-        //Iniciar Timer CMD_ACCESPOINT_WAIT_TIMER
+        if(wifiComDelay.HasFinished()) {
+          wifiResponse.clear();
+          esp32Command = COMMAND_ACCESSPOINT_STR;
+          esp32Command += STOP_CHAR;
+          _sendCommand(esp32Command.c_str());
+          wifiState = CMD_ACCESSPOINT_WAIT_RESPONSE;
+        }
+
       }
       break;
 
       case CMD_ACCESSPOINT_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if( isResponseCompleted && (wifiResponse.compare(RESULT_ERROR)) == 0 ) {
+        if (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0)) {
           wifiState = CMD_ACCESSPOINT_SEND;
         } else if (isResponseCompleted) {
           int paramIndex = wifiResponse.find(PARAM_SEPARATOR_CHAR);
           if (paramIndex != std::string::npos) {
             wifiSsid = wifiResponse.substr(0, paramIndex);
             wifiPassword = wifiResponse.substr(paramIndex + 1, wifiResponse.length());
-            wifiState = CMD_CONNECT_SEND; //U otro timer RTC hay que ver.
+            wifiState = CMD_CONNECT_SEND;
+            wifiComDelay.Start(DELAY_2_SECONDS);
           }
         } else {
           wifiState = CMD_ACCESSPOINT_SEND;
@@ -125,19 +132,20 @@ namespace Drivers {
         esp32Command += wifiServer;
         esp32Command += STOP_CHAR;
         _sendCommand(esp32Command.c_str());
-        // Timer RTC (otro mas y van...)
+        wifiState = CMD_GET_WAIT_RESPONSE;
+        wifiComDelay.Start(DELAY_3_SECONDS);
       }
       break;
 
       case CMD_GET_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if( isResponseCompleted && (wifiResponse.compare(RESULT_ERROR)) == 0 ) {
+        if ((wifiComDelay.HasFinished()) || (isResponseCompleted && (wifiCommandGetResponse.compare(RESULT_ERROR) == 0))) {
           wifiState = ERROR;
         } else if (isResponseCompleted) {
           wifiState = CMD_GET_RESPONSE_READY;
           wifiIsGetResponseReady = true;
-          // Otro Timer? Setear la variable de arriba en el callback ?
+          wifiComDelay.Start(DELAY_10_SECONDS);
         }
       }
       break;
@@ -146,7 +154,7 @@ namespace Drivers {
       {
         if (!wifiIsGetResponseReady) {
           wifiState = IDLE;
-        } else {
+        } else if(wifiComDelay.HasFinished()) {
           wifiState = ERROR;
           wifiCommandGetResponse.clear();
         }
@@ -164,21 +172,21 @@ namespace Drivers {
         esp32Command += STOP_CHAR;
         _sendCommand(esp32Command.c_str());
         wifiState = CMD_POST_WAIT_RESPONSE;
-        //Otro Timer
+        wifiComDelay.Start(DELAY_3_SECONDS);
       }
       break;
 
       case CMD_POST_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if( isResponseCompleted && (wifiResponse.compare(RESULT_ERROR)) == 0 ) {
+        if ((wifiComDelay.HasFinished()) || (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0))) {
           wifiState = CMD_POST_RESPONSE_READY;
           wifiResponse = RESULT_ERROR;
 
         } else if (isResponseCompleted) {
           wifiState = CMD_POST_RESPONSE_READY;
           wifiIsResponseReady = true;
-          // Otro Timer? Setear las variables de arriba en el callback  y volver a este estado?
+          wifiComDelay.Start(DELAY_10_SECONDS);
         }
       }
       break;
@@ -187,7 +195,7 @@ namespace Drivers {
       {
         if (!wifiIsResponseReady) {
           wifiState = IDLE;
-        } else {
+        } else if(wifiComDelay.HasFinished()) {
           wifiState = ERROR;
           wifiResponse.clear();
         }
@@ -253,6 +261,20 @@ namespace Drivers {
   }
 
   // PRIVADOO
+
+  WifiCom::WifiCom(PinName txPin, PinName rxPin, const int baudRate)
+  : wifiSerial(txPin, rxPin, baudRate),
+  wifiComDelay(0)
+  {}
+
+    void WifiCom::_init()
+  {
+    
+    wifiState = INIT;
+    wifiSsid = WIFI_SSID;
+    wifiPassword = WIFI_PASSWORD;
+    wifiSerial.enable_output(true);
+  }
 
   void WifiCom::_sendCommand(const char* command)
   {

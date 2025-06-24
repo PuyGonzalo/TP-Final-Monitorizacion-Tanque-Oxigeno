@@ -1,14 +1,17 @@
 #include "mbed.h"
 #include "arm_book_lib.h"
-#include "tank_monitor.h"
+#include "oxygen_monitor.h"
+#include <cstdio>
 
 // main() runs in its own thread in the OS
 int main() 
 {
-  Module::TankMonitor tank;
-  tank.init(0.2, 0.2, nullptr);
+  Module::OxygenMonitor::init();
 
-  while (true) {
-    tank.update();
+  while (true)
+  {
+    Module::OxygenMonitor::getInstance().update();
+    
   }
+
 }

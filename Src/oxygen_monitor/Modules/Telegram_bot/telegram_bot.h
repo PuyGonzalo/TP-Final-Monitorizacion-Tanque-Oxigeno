@@ -1,8 +1,9 @@
-/********************************************************************************
+/******************************************************************************//**
  * @file telegram_bot.h
- * @brief Telegram Bot Module header file.
  * @author Gonzalo Puy.
  * @date Aug 2024
+ * @brief Telegram Bot Module header file.
+ *
  *******************************************************************************/
 
 #ifndef TELEGRAM_BOT_H
@@ -12,15 +13,21 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <stdint.h>
 #include "telegram_bot_lib.h"
-//#include "Json.h"
+#include "PinNames.h"
+#include "delay.h"
 #include "mbed.h"
+#include "tank_monitor.h"
 
-#define NB_COMMANDS 4
+#define NB_COMMANDS 5
 
-#define BOT_API_URL "https://api.del.bot.org/bot"
-#define BOT_TOKEN   "BOT_TOKEN_sdf234323"
-#define USER_ID     "Buto_el_user"
+#define BOT_API_URL "https://api.telegram.org/bot"
+#define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
+#define USER_ID     "GP96_testBot"
+#define MAX_USER_COUNT 10
+#define MAX_ALERT_LIMIT 10
 
 //typedef void (*botFunctionCallback)();
 
@@ -66,12 +73,15 @@ namespace Module {
       std::string _commandNewTank(const std::vector<std::string> &params);
       std::string _commandTankStatus(const std::vector<std::string> &params);
       std::string _commandNewGasFlow(const std::vector<std::string> &params);
+      std::string _commandEnd(const std::vector<std::string> &params);
 
-      void _registerTankId(std::string tankId);
+      bool _registerUser(std::string userId);
 
-      bool _isTankIdValid(std::string tankId);
+      bool _unregisterUser(std::string oldUserId);
 
-      std::string _getTankId();
+      bool _isUserIdValid(std::string tankId);
+
+      std::string _getUserId();
 
       std::vector<std::string> _parseMessage(const std::string &message);
 
@@ -85,7 +95,7 @@ namespace Module {
 
       /**
       * @brief Format a string according to the provided format.
-      * @note Obtained from \link{https://stackoverflow.com/a/49812018}.
+      * @note This implementation was obtained from <a href="https://stackoverflow.com/a/49812018">here</a>.
       * @param format The format string.
       * @param ... Additional arguments for formatting.
       * @return The formatted string.
@@ -97,11 +107,13 @@ namespace Module {
       bot_state_t botState;
       const std::string botToken;
       const std::string botUrl;
-      unsigned long botTankId;
+      unsigned long botLastUpdateId;
+      std::vector<std::string> userId;
+      int userCount;
       telegram_Message botLastMessage;
       std::string botResponse;
       commandFunction functionsArray[NB_COMMANDS];
-      //delay. Pero yo deberia usar el RTC ?
+      Util::Delay         botDelay;
 
   }; //TelegramBot class
 

@@ -1,7 +1,10 @@
 {
     "target_overrides": {
         "*": {
-            "target.printf_lib": "std"
+            "target.printf_lib": "std",
+            "target.extra_includes": [
+                "arduinojson/src"
+            ]
         }
     }
 }

@@ -9,26 +9,31 @@
 
 #include <string.h>
 #include <string>
-//#include "delay.h"
+#include "delay.h"
 #include "UnbufferedSerial.h"
 #include "mbed.h"
 
-#define WIFI_PIN_TX     PR_8
-#define WIFI_PIN_RX     PE_7
+#define WIFI_PIN_TX     PA_9
+#define WIFI_PIN_RX     PA_10
 #define WIFI_BAUD_RATE  115200
-#define WIFI_SSID "Nombre-WIFI"
-#define WIFI_PASSWORD "Password123-WIFI"
+#define WIFI_SSID "Royale With Cheese"
+#define WIFI_PASSWORD "Milkra264"
 
 namespace Drivers {
   class WifiCom
   {
     public:
 
-      WifiCom(PinName txPin, PinName rx_pin, const int baudRate);
+      static WifiCom& getInstance(){
+            static WifiCom instance(WIFI_PIN_TX, WIFI_PIN_RX, WIFI_BAUD_RATE);
 
-      ~WifiCom() = default;
+            return instance;
+      }
 
-      void init();
+      WifiCom(const WifiCom&) = delete;
+      WifiCom& operator=(const WifiCom&) = delete;
+
+      static void init();
 
       void update();
 
@@ -43,6 +48,11 @@ namespace Drivers {
       bool getGetResponse(std::string* response);
 
     private:
+
+      WifiCom(PinName txPin, PinName rxPin, const int baudRate);
+      ~WifiCom() = default;
+
+      void _init();
 
       typedef enum wifi_state {
         INIT,
@@ -62,6 +72,9 @@ namespace Drivers {
         ERROR
       } wifi_state_t;
 
+      // WifiCom(const WifiCom&) = delete;
+      // WifiCom& operator=(const WifiCom&) = delete;
+
       void _sendCommand(const char* command);
 
       bool _isResponseCompleted(std::string* response);
@@ -70,6 +83,7 @@ namespace Drivers {
 
       wifi_state_t  wifiState;
       UnbufferedSerial  wifiSerial;
+      Util::Delay       wifiComDelay;
       std::string       wifiSsid;
       std::string       wifiPassword;
       std::string       wifiResponse;
