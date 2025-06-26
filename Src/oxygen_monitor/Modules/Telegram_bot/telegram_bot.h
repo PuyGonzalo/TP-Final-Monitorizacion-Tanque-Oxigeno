@@ -15,6 +15,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <stdint.h>
 #include "telegram_bot_lib.h"
@@ -29,6 +30,7 @@
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
 #define USER_ID     "GP96_testBot"
 #define MAX_USER_COUNT 10
+#define MAX_PARAMS_SIZE 15
 #define MAX_ALERT_LIMIT 10
 
 namespace Module {
@@ -39,33 +41,23 @@ namespace Module {
 
       /**
       * @brief
-      * @note
       * @param
-      * @return
+      * @param
       */
       TelegramBot(const char *apiUrl, const char *token);
 
       /**
       * @brief
-      * @note
-      * @param
-      * @return
       */
       ~TelegramBot() = default;
 
       /**
       * @brief
-      * @note
-      * @param
-      * @return
       */
       void init();
 
       /**
       * @brief
-      * @note
-      * @param
-      * @return
       */
       void update();
 
@@ -102,17 +94,22 @@ namespace Module {
         WAITING_RESPONSE,       /**< Waiting for API response. */
       } bot_state_t;
 
-      // Command Handlers
+      /**
+      * @name Comands Handlers
+      * Handler for telegram commands
+      * @{
+      */
       std::string _commandStart(const std::vector<std::string> &params);
       std::string _commandNewTank(const std::vector<std::string> &params);
       std::string _commandTankStatus(const std::vector<std::string> &params);
       std::string _commandNewGasFlow(const std::vector<std::string> &params);
       std::string _commandEnd(const std::vector<std::string> &params);
+      /** @} */
 
       bool _registerUser(std::string userId);
       bool _unregisterUser(std::string oldUserId);
       bool _isUserIdValid(std::string tankId);
-      std::string _getUserId();
+      std::string _getUserId(std::string user);
       std::vector<std::string> _parseMessage(const std::string &message);
       void _sendMessage(const std::string chatId, const std::string message);
       void _requestLastMessage();
@@ -125,12 +122,14 @@ namespace Module {
       const std::string botToken;                     /**< Bot API token. */
       const std::string botUrl;                       /**< Bot API URL. */
       unsigned long botLastUpdateId;                  /**< ID of the last processed update. */
-      std::vector<std::string> userId;                /**< List of registered user IDs. */
+      std::vector<std::string> userId;                /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
       int userCount;                                  /**< Number of registered users. */
+      int broadcastIndex;
+      bool isBroadcastInProgress;
       telegram_Message botLastMessage;                /**< Last received message. */
       std::string botResponse;                        /**< Last response from API. */
-      commandFunction functionsArray[NB_COMMANDS];    /**< Command dispatch table. */
-      Util::Delay botDelay;                           /**< Delay utility for timing. */
+      commandFunction functionsArray[NB_COMMANDS];    /**< Commands function array. */
+      Util::Delay botDelay;                           /**< Delay utility for timing. TODO: ¿Sacar?*/
 
   }; //TelegramBot class
 

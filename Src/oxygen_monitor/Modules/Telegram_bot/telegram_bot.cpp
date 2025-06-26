@@ -21,7 +21,7 @@
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout tBotTimeout;                   /**<  */
+static Timeout tBotTimeout;                   /**<  */ //TODO: Cambiar al non blocking delay >:(
 static bool isTimeoutFinished;                /**<  */
 
 static Timeout alertTimeout;                  /**<  */
@@ -47,8 +47,10 @@ namespace Module {
     botLastUpdateId = 0;
     std::fill(userId.begin(), userId.end(), "");
     userCount = 0;
+    broadcastIndex = 0;
     isTimeoutFinished = false;
     isAlertTimeoutFinished = true; //El estado inicial de esta variable DEBE ser true.
+    isBroadcastInProgress = false;
 
     functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
     functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
@@ -73,14 +75,12 @@ namespace Module {
 
       case MONITOR:
       {
-        if (!(Module::TankMonitor::getInstance().getTankState())) {
+        if ( isAlertTimeoutFinished && !(Module::TankMonitor::getInstance().getTankState())) {
 
-          if(isAlertTimeoutFinished) {
           isTimeoutFinished = false;
           alertTimeout.detach();
           alertTimeout.attach(&onAlertTimeoutFinishedCallback, 5s);
           botState = SEND_ALERT;
-          }
           
         } else {
           botState = REQUEST_LAST_MESSAGE;
@@ -96,8 +96,9 @@ namespace Module {
         if (!Drivers::WifiCom::getInstance().isBusy()) {
           std::string messegeToSend = ALERT_TANK_EMPTY;
           messegeToSend += "\n";
-          std::string userId = _getUserId();
-          _sendMessage(userId, messegeToSend);
+          //std::string userId = _getUserId();
+          _sendMessage(userId[broadcastIndex], messegeToSend);
+          isBroadcastInProgress = userCount > 1 ? true : false;
           botState = WAITING_RESPONSE;
         }
       }
@@ -153,7 +154,7 @@ namespace Module {
         _sendMessage(botLastMessage.fromId, messegeToSend);
         isTimeoutFinished = false;
         tBotTimeout.detach();
-        tBotTimeout.attach(&onTBotTimeoutFinishedCallback,5000ms);
+        tBotTimeout.attach(&onTBotTimeoutFinishedCallback,5s);
         botState = WAITING_RESPONSE;
       }
       break;
@@ -162,20 +163,40 @@ namespace Module {
       {
         std::string response;
         if (isTimeoutFinished || (Drivers::WifiCom::getInstance().getPostResponse(&response) && botResponse.compare(RESULT_ERROR) == 0 )) {
-          botState = INIT;
+          if (isBroadcastInProgress)
+          {
+            // SI falló y hay un broadcast en progreso, reintentar
+            isBroadcastInProgress = true;
+            botState = SEND_ALERT;
+          } else {
+            broadcastIndex = 0;
+            isBroadcastInProgress = false;
+            botState = INIT;
+          }
         } else if (Drivers::WifiCom::getInstance().getPostResponse(&response)) {
-          botState = INIT;
+          if (isBroadcastInProgress){
+            broadcastIndex++;
+            if (broadcastIndex >= userCount)
+            {
+              broadcastIndex = 0;
+              isBroadcastInProgress = false;
+              botState = INIT;
+            } else {
+              botState = SEND_ALERT;
+            }
+          }else {
+            botState = INIT;
+          }
         }
       }
       break;
     }
   }
 
-//=====[Implementations of public functions]===================================
+//=====[Implementations of private functions]===================================
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -202,7 +223,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -242,7 +262,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -253,7 +272,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -264,7 +282,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -288,7 +305,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -310,7 +326,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -330,7 +345,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -346,14 +360,18 @@ namespace Module {
     return false;
   }
 
-  std::string TelegramBot::_getUserId()
+  /**
+  * @brief 
+  * @param 
+  * @return
+  */
+  std::string TelegramBot::_getUserId(std::string user)
   {
     return USER_ID;
   }
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
@@ -384,9 +402,8 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
-  * @return
+  * @param 
   */
   void TelegramBot::_sendMessage(const std::string chatId, const std::string message)
   {
@@ -398,9 +415,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
-  * @param 
-  * @return
   */
   void TelegramBot::_requestLastMessage()
   {
@@ -411,7 +425,7 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
+  * @param
   * @param 
   * @return
   */
@@ -480,8 +494,7 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @note 
+  * @brief
   * @param 
   * @return
   */
@@ -530,7 +543,6 @@ namespace Module {
 
   /**
   * @brief 
-  * @note 
   * @param 
   * @return
   */
