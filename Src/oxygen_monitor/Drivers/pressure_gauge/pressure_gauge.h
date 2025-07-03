@@ -46,13 +46,13 @@ class PressureGauge {
    * @brief Get last pressure reading.
    * @return float Last pressure reading.
    */
-  float get_last_reading(); /// TODO: Ver si me sirve.
+  float get_last_reading();
 
  private:
 
-  AnalogIn _pin; ///< AnalogIn pin.
-  float last_reading; ///< Last value read.
-  float ref; ///< TODO: Completar esto.
+  AnalogIn _pin;        /**< AnalogIn pin. */
+  float last_reading;   /**< Last value read. */
+  float ref;            /**<  */ //TODO: Completar esto.
 
 }; // Class PreassureGauge
 

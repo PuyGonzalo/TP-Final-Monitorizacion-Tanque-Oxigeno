@@ -37,7 +37,7 @@ const char COMMAND_START_STR[]              = "/start";
 const char COMMAND_NEW_TANK_STR[]           = "/newtank";
 
 /**
- * @brief Command string for registering a new tank.
+ * @brief Command string for seting up a new tank.
  */
 const char COMMAND_TANK_STR[]           = "/tank";
 
@@ -47,17 +47,17 @@ const char COMMAND_TANK_STR[]           = "/tank";
 const char COMMAND_TANK_STATUS_STR[]        = "/status";
 
 /**
- * @brief Command string for setting new gas flow.
+ * @brief Command string for new gas flow.
  */
 const char COMMAND_NEW_GAS_FLOW_STR[]       = "/newgf";
 
 /**
- * @brief Command string for setting new gas flow.
+ * @brief Command string for setting the new gas flow.
  */
 const char COMMAND_GAS_FLOW_STR[]       = "/gasflow";
 
 /**
- * @brief Command string for setting new gas flow.
+ * @brief Command string for ending the bot session.
  */
 const char COMMAND_END_STR[]       = "/end";
 
@@ -77,7 +77,7 @@ const char ERROR_INVALID_USER_STR[]         = "[ERROR]\nInvalid user [%s].";
 const char ERROR_INVALID_PARAMETERS_STR[]   = "[ERROR]\nInvalid parameters for  [%s] command.";
 
 /**
- * @brief Error message for invalid tank IDs.
+ * @brief Error message for unregistered tank.
  */
 const char ERROR_NO_TANK_STR[]      = "[Error]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
 

@@ -14,35 +14,36 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define PRESSURE_THRESHOLD 0.5f 
+#define PRESSURE_THRESHOLD 0.5f // [bar] TODO: Cambiar!!! Esto no esta en bar
 #define TANK_D_FACTOR 2.3f      // [L/bar]
 #define TANK_E_FACTOR 4.1f      // [L/bar]
 #define TANK_M_FACTOR 22.6f     // [L/bar]
 #define TANK_H_FACTOR 45.5f     // [L/bar]
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief String for tank type D.
  */
 const char TANK_D_STR[]              = "D";
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief String for tank type E.
  */
 const char TANK_E_STR[]              = "E";
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief String for tank type M.
  */
 const char TANK_M_STR[]              = "M";
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief String for tank type H.
  */
 const char TANK_H_STR[]              = "H";
 
 //===========================[Module Types]=====================================
 
 /**
+ * @enum TANK_STATE
  * @brief TODO: Completar
  */
 typedef enum tank_state {
@@ -51,6 +52,7 @@ typedef enum tank_state {
 } tank_state_t;
 
 /**
+ * @enum TANK_TYPE
  * @brief TODO: Completar
  */
 typedef enum tank_type {
@@ -96,8 +98,10 @@ class TankMonitor {
    * @brief TODO: Completar
    */
   void setNewGasFlow(const int tankGasFlow);
+  
   /**
    * @brief TODO: Completar
+   * @return
    */
   tank_state_t getTankState();
 
@@ -108,11 +112,13 @@ class TankMonitor {
 
   /**
   * @brief TODO: Completar
+  * @return 
   */
   bool isTankTypeValid(const std::string fTankType);
 
   /**
   * @brief TODO: Completar
+  * @return 
   */
   bool isTankRegistered();
 
