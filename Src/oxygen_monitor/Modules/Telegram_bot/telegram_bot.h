@@ -63,6 +63,9 @@ namespace Module {
 
     private:
 
+      using ParametersArray = std::array<std::string, MAX_PARAMS>; /**< Aliasing used for array class. */
+      using UsersArray = std::array<std::string, MAX_USER_COUNT>;  /**< Aliasing used for array class. */
+
       /**
       * @brief Type for command function pointers.
       */
@@ -99,11 +102,6 @@ namespace Module {
       * Handler for telegram commands
       * @{
       */
-      // std::string _commandStart(const std::vector<std::string> &params);
-      // std::string _commandNewTank(const std::vector<std::string> &params);
-      // std::string _commandTankStatus(const std::vector<std::string> &params);
-      // std::string _commandNewGasFlow(const std::vector<std::string> &params);
-      // std::string _commandEnd(const std::vector<std::string> &params);
       std::string _commandStart(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
@@ -117,7 +115,6 @@ namespace Module {
       bool _unregisterUser(std::string oldUserId);
       bool _isUserIdValid(std::string tankId);
       std::string _getUserId(std::string user);
-      // std::vector<std::string> _parseMessage(const std::string &message);
       std::array<std::string, MAX_PARAMS> _parseMessage(const std::string &message, size_t &paramCount);
       void _sendMessage(const std::string chatId, const std::string message);
       void _requestLastMessage();
@@ -130,7 +127,7 @@ namespace Module {
       const std::string botToken;                     /**< Bot API token. */
       const std::string botUrl;                       /**< Bot API URL. */
       unsigned long botLastUpdateId;                  /**< ID of the last processed update. */
-      std::array<std::string, MAX_USER_COUNT> userId;                /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
+      std::array<std::string, MAX_USER_COUNT> userId; /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
       int userCount;                                  /**< Number of registered users. */
       int broadcastIndex;
       bool isBroadcastInProgress;

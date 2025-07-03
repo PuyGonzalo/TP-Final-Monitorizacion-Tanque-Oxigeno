@@ -15,10 +15,9 @@
 
 //=========================[Module Defines]=====================================
 
-#define PRESS_SENSOR_NUM_SAMPLES 5
 #define PRESS_SENSOR_PIN A1
-#define MIN_PRESS_VALUE  0.0
-#define MAX_PRESS_VALUE  99.9
+#define MIN_PRESS_VALUE  0.5f
+#define MAX_PRESS_VALUE  4.5f
 
 namespace Drivers {
 
@@ -50,11 +49,8 @@ class PressureGauge {
   float get_last_reading(); /// TODO: Ver si me sirve.
 
  private:
-  using PressReadingsVec = std::vector<float>; // Aliasing used for vector class.
 
   AnalogIn _pin; ///< AnalogIn pin.
-  PressReadingsVec pressure_reading_vec; ///< Vector used for measure storage. TODO: Ver si me sirve o no. Por ahora lo dejo
-  PressReadingsVec::iterator pressure_reading_iter; ///< Iterator for measure storage vector.
   float last_reading; ///< Last value read.
   float ref; ///< TODO: Completar esto.
 

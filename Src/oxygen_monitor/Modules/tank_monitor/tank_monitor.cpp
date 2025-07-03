@@ -4,7 +4,6 @@
  * @date Jun 2024
  * @brief Tank level monitor module. Implemented with singleton design pattern
           in order to ensure only one instance of the object TankMonitor.
-          More info <a href="https://stackoverflow.com/a/1008289">available here</a>.
 
  *******************************************************************************/
 
@@ -56,7 +55,10 @@ tank_state_t TankMonitor::getTankState()
 
 void TankMonitor::getTankStatus()
 {
+  pressure_sensor.update();
+  float last_reading = pressure_sensor.get_last_reading();
 
+  //TODO: Hacer!!
 }
 
 bool TankMonitor::isTankTypeValid(const std::string fTankType)
