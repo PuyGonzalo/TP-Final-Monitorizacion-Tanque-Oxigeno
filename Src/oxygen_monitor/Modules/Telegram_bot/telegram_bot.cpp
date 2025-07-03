@@ -490,7 +490,7 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_getUserId(std::string user)
+  std::string TelegramBot::_getUserId(std::string user) //TODO: Esta funcion esta al pedo?
   {
     std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.begin() + userCount, user);
 

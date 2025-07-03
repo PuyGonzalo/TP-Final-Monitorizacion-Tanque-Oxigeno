@@ -119,7 +119,7 @@ namespace Module {
     return TANK_TYPE_NONE;
   }
 
-    /**
+  /**
   * @brief TODO: Completar
   */
   float TankMonitor::_getTypeFactor()

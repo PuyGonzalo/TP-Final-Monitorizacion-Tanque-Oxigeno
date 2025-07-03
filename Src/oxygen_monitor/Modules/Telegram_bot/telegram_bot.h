@@ -25,8 +25,9 @@
 #include "mbed.h"
 #include "tank_monitor.h"
 
-#define NB_COMMANDS 7
+//=========================[Module Defines]=====================================
 
+#define NB_COMMANDS 7
 #define BOT_API_URL "https://api.telegram.org/bot"
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
 #define USER_ID     "GP96_testBot"
