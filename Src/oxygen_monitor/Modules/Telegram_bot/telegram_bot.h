@@ -63,13 +63,13 @@ namespace Module {
 
     private:
 
-      using ParametersArray = std::array<std::string, MAX_PARAMS>; /**< Aliasing used for array class. */
-      using UsersArray = std::array<std::string, MAX_USER_COUNT>;  /**< Aliasing used for array class. */
+      using ParametersArray = std::array<std::string, MAX_PARAMS>;  /**< Aliasing used for array class. */
+      using UsersArray = std::array<std::string, MAX_USER_COUNT>;   /**< Aliasing used for array class. */
 
       /**
       * @brief Type for command function pointers.
       */
-      typedef std::string (TelegramBot::*commandFunction)(const std::array<std::string, MAX_PARAMS> &params, const size_t paramCount);
+      typedef std::string (TelegramBot::*commandFunction)(const ParametersArray &params, const size_t paramCount);
 
       /**
        * @struct telegram_Message
@@ -102,20 +102,20 @@ namespace Module {
       * Handler for telegram commands
       * @{
       */
-      std::string _commandStart(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandNewGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
-      std::string _commandEnd(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandStart(const ParametersArray &params, size_t paramCount);
+      std::string _commandNewTank(const ParametersArray &params, size_t paramCount);
+      std::string _commandTank(const ParametersArray &params, size_t paramCount);
+      std::string _commandTankStatus(const ParametersArray &params, size_t paramCount);
+      std::string _commandNewGasFlow(const ParametersArray &params, size_t paramCount);
+      std::string _commandGasFlow(const ParametersArray &params, size_t paramCount);
+      std::string _commandEnd(const ParametersArray &params, size_t paramCount);
       /** @} */
 
       bool _registerUser(std::string userId);
       bool _unregisterUser(std::string oldUserId);
       bool _isUserIdValid(std::string tankId);
       std::string _getUserId(std::string user);
-      std::array<std::string, MAX_PARAMS> _parseMessage(const std::string &message, size_t &paramCount);
+      ParametersArray _parseMessage(const std::string &message, size_t &paramCount);
       void _sendMessage(const std::string chatId, const std::string message);
       void _requestLastMessage();
       bool _getMessageFromResponse(telegram_Message *message, const std::string &response);
@@ -123,18 +123,18 @@ namespace Module {
       std::string _formatString(const char* format, ... );
       bool _isStringNumeric(const std::string &str);
 
-      bot_state_t botState;                           /**< Current bot state. */
-      const std::string botToken;                     /**< Bot API token. */
-      const std::string botUrl;                       /**< Bot API URL. */
-      unsigned long botLastUpdateId;                  /**< ID of the last processed update. */
-      std::array<std::string, MAX_USER_COUNT> userId; /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
-      int userCount;                                  /**< Number of registered users. */
-      int broadcastIndex;
-      bool isBroadcastInProgress;
-      telegram_Message botLastMessage;                /**< Last received message. */
-      std::string botResponse;                        /**< Last response from API. */
-      commandFunction functionsArray[NB_COMMANDS];    /**< Commands function array. */
-      Util::Delay botDelay;                           /**< Delay utility for timing. TODO: ¿Sacar?*/
+      bot_state_t botState;                         /**< Current bot state. */
+      const std::string botToken;                   /**< Bot API token. */
+      const std::string botUrl;                     /**< Bot API URL. */
+      unsigned long botLastUpdateId;                /**< ID of the last processed update. */
+      UsersArray userId;                            /**< List of registered user IDs. */
+      int userCount;                                /**< Number of registered users. */
+      int broadcastIndex;                           /**<  */
+      bool isBroadcastInProgress;                   /**<  */
+      telegram_Message botLastMessage;              /**< Last received message. */
+      std::string botResponse;                      /**< Last response from API. */
+      commandFunction functionsArray[NB_COMMANDS];  /**< Commands function array. */
+      Util::Delay botDelay;                         /**< Delay utility for timing. TODO: ¿Sacar?*/
 
   }; //TelegramBot class
 
