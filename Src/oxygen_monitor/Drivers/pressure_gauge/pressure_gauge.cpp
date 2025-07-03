@@ -37,11 +37,11 @@ namespace Drivers {
   void PressureGauge::update()
   {
     float analog_reading = _pin.read();
-
+    printf("Analog reading: %.2f V\n\r", analog_reading);
     if (analog_reading < MIN_READING_VALUE) {
       analog_reading = MIN_READING_VALUE;
     }
-    else if (analog_reading > MAX_READING_VALUE) {
+    else if (analog_reading > MAX_READING_VALUE ) {
       analog_reading = MAX_READING_VALUE;
     }
 

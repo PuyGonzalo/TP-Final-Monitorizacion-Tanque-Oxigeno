@@ -27,7 +27,7 @@ namespace Module {
   {
     pressure_sensor.update();
     float last_reading = pressure_sensor.get_last_reading();
-
+    printf("Last reading: %.2f bar\n\r", last_reading);
     if (last_reading < PRESSURE_THRESHOLD) {
 
       tank_state = TANK_LEVEL_LOW;

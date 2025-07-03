@@ -14,8 +14,8 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define PRESSURE_THRESHOLD 0.5f     // [bar] TODO: Cambiar!!! Esto no esta en bar
-#define TANK_RESERVE 0.0f           // [bar]
+#define PRESSURE_THRESHOLD 14.0f     // [bar] TODO: Cambiar!!! Esto no esta en bar
+#define TANK_RESERVE 14.0f           // [bar]
 #define TANK_TYPICAL_PRESS 138.0f   // [bar]
 #define TANK_D_FACTOR 2.3f          // [L/bar]
 #define TANK_E_FACTOR 4.1f          // [L/bar]
@@ -78,13 +78,13 @@ class TankMonitor {
     return instance;
   }
   // Erase default C++ copy methods in order to avoid generating accidental copies of singleton.
-  TankMonitor(TankMonitor const&) = delete;
-  void operator=(TankMonitor const&);
+  TankMonitor(const TankMonitor&) = delete;
+  TankMonitor& operator=(const TankMonitor&) = delete;
   
   /**
    * @brief Initializes Pressure Monitor Module
    */
-  void init();
+  static void init();
 
   /**
    * @brief TODO: Completar

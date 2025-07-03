@@ -44,8 +44,9 @@ void OxygenMonitor::update()
 {
     if(isTimeoutFinished) 
     {
+      Module::TankMonitor::getInstance().update();
       o2MonitorTimeout.detach();
-      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, 60s);
+      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, 10s); //TODO: Cambiar por 60 segundos
       isTimeoutFinished = false;
     }
     Drivers::WifiCom::getInstance().update();
@@ -62,13 +63,15 @@ OxygenMonitor::OxygenMonitor()
 void Module::OxygenMonitor::_init()
 {
   
-    // Util::PcSerialCom::Init();
     printf("\nInit TICK\n");
     Util::Tick::Init();
     printf("\nInit WifiCom\n");
     Drivers::WifiCom::init();
     printf("\nInit Telegram BOT\n");
     telegramBot.init();
+    printf("\nInit TankMonitor\n");
+    Module::TankMonitor::init();
+
 }
 
 void Module::OxygenMonitor::onO2MonitorTimeoutFinishedCallback()
