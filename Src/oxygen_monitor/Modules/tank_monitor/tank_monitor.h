@@ -98,7 +98,7 @@ class TankMonitor {
    * @brief TODO: Completar
    */
   void setNewGasFlow(const int tankGasFlow);
-  
+
   /**
    * @brief TODO: Completar
    * @return
@@ -131,11 +131,11 @@ class TankMonitor {
   void _init();
   tank_type_t _findType(const std::string fTankType);
 
-  tank_state_t tank_state;
-  tank_type_t tank_type;
-  float gas_flow;
-  float tank_capacity;
-  bool tankRegistered;
+  tank_state_t tank_state;  /**< Current tank state. */
+  tank_type_t tank_type;    /**< Current tank type. */
+  float gas_flow;           /**< Current gas flow [L/min] */
+  float tank_capacity;      /**< Current tank capacity [L] */
+  bool tankRegistered;      /**< Tank registered */
 
 }; // Class PressureMonitor
 
