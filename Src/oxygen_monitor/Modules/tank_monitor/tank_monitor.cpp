@@ -38,7 +38,7 @@ namespace Module {
   void TankMonitor::setNewTank(const std::string tankType, const int tankCapacity, const int tankGasFlow)
   {
     tank_type = _findType(tankType);
-    tank_capacity = tankCapacity;
+    tank_capacity = (float) tankCapacity;
     gas_flow = (float) tankGasFlow;
     tankRegistered = true;
   }
@@ -53,12 +53,26 @@ namespace Module {
     return TANK_LEVEL_LOW;
   }
 
-  void TankMonitor::getTankStatus()
+  float TankMonitor::getTankStatus()
   {
+
+    if (!tankRegistered) return 0.0;
+
     pressure_sensor.update();
     float last_reading = pressure_sensor.get_last_reading();
 
-    //TODO: Hacer!!
+    if (tank_type == TANK_TYPE_NONE) {
+      float availabeVolume = (last_reading / TANK_TYPICAL_PRESS) * tank_capacity;
+      float time = availabeVolume / gas_flow;
+
+      return time; // [min]
+    } else {
+      float factor = _getTypeFactor();
+      float availabeVolume = (last_reading - TANK_RESERVE) * factor;
+      float time = availabeVolume / gas_flow;
+
+      return time; // [min]
+    }
   }
 
   bool TankMonitor::isTankTypeValid(const std::string fTankType)
@@ -103,6 +117,24 @@ namespace Module {
     } 
 
     return TANK_TYPE_NONE;
+  }
+
+    /**
+  * @brief TODO: Completar
+  */
+  float TankMonitor::_getTypeFactor()
+  {
+    if (tank_type == TANK_D ) {
+      return TANK_D_FACTOR;
+    } else if (tank_type == TANK_E) {
+      return TANK_E_FACTOR;
+    } else if (tank_type == TANK_M) {
+      return TANK_M_FACTOR;
+    } else if (tank_type == TANK_H) {
+      return TANK_H_FACTOR;
+    }
+
+    return 0.0;
   }
 
 }; // namespace Module

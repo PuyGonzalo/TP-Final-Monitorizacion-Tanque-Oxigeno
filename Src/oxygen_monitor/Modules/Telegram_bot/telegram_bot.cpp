@@ -314,10 +314,25 @@ namespace Module {
     if (paramCount == 1) {
       //TODO: HACER
       if (Module::TankMonitor::getInstance().isTankRegistered()) {
-        float lala = 0.3;
-        return _formatString("[Tank Status]\
-               \nThe tank will go low in approximately %f.2 min.",
-               lala);
+        float time = Module::TankMonitor::getInstance().getTankStatus();
+
+        if (time > 60.0) {
+          int hours = (int) (time / 60.0);
+          float minutesLeft = time - (hours * 60.0);
+          int minutes = (int) (minutesLeft + 0.5);
+          return _formatString("[Tank Status]\
+                 \nThe tank will go low in approximately %d hs. and %d min.",
+                 hours, minutes);
+        } else if (time < 60.0){
+          int timeLeft = (int) time;
+          return _formatString("[Tank Status]\
+                 \nThe tank will go low in approximately %d min.",
+                 timeLeft);
+        } else {
+          return _formatString("[Tank Status Error]\
+                 \nCan't get tank status.\
+                 \nPlease try again.");
+        }
 
       } else {
         return _formatString(ERROR_NO_TANK_STR);

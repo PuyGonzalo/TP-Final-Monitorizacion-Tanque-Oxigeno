@@ -38,19 +38,16 @@ namespace Drivers {
   {
     float analog_reading = _pin.read();
 
-    // Logic to transform reading to pressure
-    // TODO: HACER!!!
-    float pressure_value = analog_reading * MAX_PRESS_VALUE;
+    if (analog_reading < MIN_READING_VALUE) {
+      analog_reading = MIN_READING_VALUE;
+    }
+    else if (analog_reading > MAX_READING_VALUE) {
+      analog_reading = MAX_READING_VALUE;
+    }
 
-    if (pressure_value < MIN_PRESS_VALUE) {
-      last_reading = MIN_PRESS_VALUE;
-    }
-    else if (pressure_value > MAX_PRESS_VALUE) {
-      last_reading = MAX_PRESS_VALUE;
-    }
-    else {
-      last_reading = pressure_value;
-    }
+    float pressure = (analog_reading - MIN_READING_VALUE) * (MAX_PRESS_VALUE / (MAX_READING_VALUE - MIN_READING_VALUE));
+
+    last_reading = pressure;
 
   }
 

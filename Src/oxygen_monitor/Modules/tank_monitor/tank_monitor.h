@@ -14,11 +14,13 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define PRESSURE_THRESHOLD 0.5f // [bar] TODO: Cambiar!!! Esto no esta en bar
-#define TANK_D_FACTOR 2.3f      // [L/bar]
-#define TANK_E_FACTOR 4.1f      // [L/bar]
-#define TANK_M_FACTOR 22.6f     // [L/bar]
-#define TANK_H_FACTOR 45.5f     // [L/bar]
+#define PRESSURE_THRESHOLD 0.5f     // [bar] TODO: Cambiar!!! Esto no esta en bar
+#define TANK_RESERVE 0.0f           // [bar]
+#define TANK_TYPICAL_PRESS 138.0f   // [bar]
+#define TANK_D_FACTOR 2.3f          // [L/bar]
+#define TANK_E_FACTOR 4.1f          // [L/bar]
+#define TANK_M_FACTOR 22.6f         // [L/bar]
+#define TANK_H_FACTOR 45.5f         // [L/bar]
 
 /**
  * @brief String for tank type D.
@@ -107,8 +109,9 @@ class TankMonitor {
 
   /**
    * @brief TODO: Completar
+   * @return
    */
-  void getTankStatus();
+  float getTankStatus();
 
   /**
   * @brief TODO: Completar
@@ -130,6 +133,7 @@ class TankMonitor {
 
   void _init();
   tank_type_t _findType(const std::string fTankType);
+  float _getTypeFactor();
 
   tank_state_t tank_state;  /**< Current tank state. */
   tank_type_t tank_type;    /**< Current tank type. */

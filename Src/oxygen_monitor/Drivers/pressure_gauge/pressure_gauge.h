@@ -16,8 +16,9 @@
 //=========================[Module Defines]=====================================
 
 #define PRESS_SENSOR_PIN A1
-#define MIN_PRESS_VALUE  0.5f
-#define MAX_PRESS_VALUE  4.5f
+#define MIN_READING_VALUE  0.5f
+#define MAX_READING_VALUE  4.5f
+#define MAX_PRESS_VALUE 300 // [bar] depende del modelo comprado.
 
 namespace Drivers {
 
