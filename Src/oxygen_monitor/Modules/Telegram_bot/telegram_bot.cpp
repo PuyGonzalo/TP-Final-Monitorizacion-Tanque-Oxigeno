@@ -7,6 +7,7 @@
 
 #include "telegram_bot.h"
 
+#include <cstddef>
 #include <cstdio>
 #include <cstdarg>
 #include <sstream>
@@ -38,14 +39,15 @@ namespace Module {
   : botUrl(apiUrl)
   , botToken(token)
   , botDelay(0)
-  , userId(MAX_USER_COUNT)
+  // , userId(MAX_USER_COUNT)
   {
   }
 
   void TelegramBot::init()
   {
     botLastUpdateId = 0;
-    std::fill(userId.begin(), userId.end(), "");
+    // std::fill(userId.begin(), userId.end(), "");
+    userId.fill("");
     userCount = 0;
     broadcastIndex = 0;
     isTimeoutFinished = false;
@@ -75,7 +77,7 @@ namespace Module {
 
       case MONITOR:
       {
-        if ( isAlertTimeoutFinished && !(Module::TankMonitor::getInstance().getTankState())) {
+        if ( isAlertTimeoutFinished && !(Module::TankMonitor::getInstance().getTankState()) ) {
 
           isTimeoutFinished = false;
           alertTimeout.detach();
@@ -136,14 +138,15 @@ namespace Module {
       case PROCESS_LAST_MESSAGE:
       {
         std::string messegeToSend;
-        std::vector<std::string> params = _parseMessage(botLastMessage.message);
+        size_t paramCount;
+        std::array<std::string, MAX_PARAMS> params = _parseMessage(botLastMessage.message, paramCount);
         std::string command = params[0];
 
         if( (_isUserIdValid(botLastMessage.fromId)) || (command.compare(COMMAND_START_STR) == 0 )) {
           command_t command_nb = _findCommand(command); //Agregar verificacion de comando
           if (command_nb != ERROR_INVALID_COMMAND)
           {
-            messegeToSend = (this->*functionsArray[command_nb])(params);
+            messegeToSend = (this->*functionsArray[command_nb])(params, paramCount);
           }else {
             messegeToSend = _formatString(ERROR_INVALID_COMMAND_STR, command.c_str());
           }
@@ -200,11 +203,10 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_commandStart(const std::vector<std::string> &params)
+  std::string TelegramBot::_commandStart(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
-    if (params.size() == 1) {
+    if (paramCount == 1) {
       std::string result;
-      printf("Entro aca\r\n");
       bool registerSuccess = _registerUser(botLastMessage.fromId);
 
       if (registerSuccess)
@@ -226,9 +228,9 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_commandNewTank(const std::vector<std::string> &params)
+  std::string TelegramBot::_commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
-    if (params.size() == 3) {
+    if (paramCount == 3) {
       std::string numTankId = params[1];
       std::string numTankCapacity = params[2];
 
@@ -240,7 +242,7 @@ namespace Module {
         return _formatString("[Success!]\nNew Oxygen Tank with ID: [%d]\nAnd Capacity of [%d] lts.\nWas seted up.", tankId, tankCapacity);
       }
 
-    } else if (params.size() == 4) {
+    } else if (paramCount == 4) {
       std::string numTankId = params[1];
       std::string numTankCapacity = params[2];
       std::string numTankGasFlow = params[3];
@@ -265,7 +267,7 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_commandTankStatus(const std::vector<std::string> &params)
+  std::string TelegramBot::_commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
@@ -275,7 +277,7 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_commandNewGasFlow(const std::vector<std::string> &params)
+  std::string TelegramBot::_commandNewGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
@@ -285,9 +287,9 @@ namespace Module {
   * @param 
   * @return
   */
-  std::string TelegramBot::_commandEnd(const std::vector<std::string> &params)
+  std::string TelegramBot::_commandEnd(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
-    if (params.size() == 1) {
+    if (paramCount == 1) {
       std::string result;
       bool unregisterSuccess = _unregisterUser(botLastMessage.fromId);
 
@@ -311,13 +313,15 @@ namespace Module {
   bool TelegramBot::_registerUser(std::string newUserId)
   {
     bool userFound = _isUserIdValid(newUserId);
-    
+    printf("userFound: %d\r\n", userFound);
+
     if (!userFound)
     {
       if (userCount == MAX_USER_COUNT){
         return false;
       }
-      userId.insert(userId.begin(), newUserId);  // Insert at beginning
+      //userId.insert(userId.begin(), newUserId);  // Insert at beginning
+      userId[userCount] = newUserId;
       userCount++;
       return true;
     }
@@ -331,11 +335,19 @@ namespace Module {
   */
   bool TelegramBot::_unregisterUser(std::string oldUserId)
   {
-    std::vector<std::string>::iterator it = std::find(userId.begin(), userId.end(), oldUserId);
-    
+    std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.end(), oldUserId);
+    std::array<std::string, MAX_USER_COUNT>::iterator end = userId.begin() + userCount;
+
     if (it != userId.end()) {
-      userId.erase(it);
+      std::array<std::string, MAX_USER_COUNT>::iterator next;
+
+      for (next = it + 1; next != end; ++it, ++next)
+      {
+          *it = *next;
+      }
+
       userCount--;
+      userId[userCount] = "";  // Limpiar el último valor válido
       return true;
     } else {
       return false;
@@ -350,9 +362,9 @@ namespace Module {
   */
   bool TelegramBot::_isUserIdValid(std::string fUserId)
   {
-    std::vector<std::string>::iterator it = std::find(userId.begin(), userId.end(), fUserId);
+    std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.begin() + userCount, fUserId);
 
-    if (it != userId.end())
+    if (it != userId.begin() + userCount)
     {
       return true;
     }
@@ -367,7 +379,14 @@ namespace Module {
   */
   std::string TelegramBot::_getUserId(std::string user)
   {
-    return USER_ID;
+    std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.begin() + userCount, user);
+
+    if (it != userId.begin() + userCount)
+    {
+      return *it;
+    }
+
+    return "User not found";
   }
 
   /**
@@ -375,30 +394,59 @@ namespace Module {
   * @param 
   * @return
   */
-  std::vector<std::string> TelegramBot::_parseMessage(const std::string &message)
-  {
-    std::vector<std::string> params;
-    size_t start = 0;
-    size_t end = message.find(' ');
+  // std::vector<std::string> TelegramBot::_parseMessage(const std::string &message)
+  // {
+  //   std::vector<std::string> params;
+  //   size_t start = 0;
+  //   size_t end = message.find(' ');
 
-    while (end != std::string::npos)
-    {
-        params.push_back(message.substr(start, end - start));
-        start = end + 1;
-        end = message.find(' ', start);
-    }
+  //   while (end != std::string::npos)
+  //   {
+  //       params.push_back(message.substr(start, end - start));
+  //       start = end + 1;
+  //       end = message.find(' ', start);
+  //   }
 
-    // Agregar el último parámetro (si existe)
-    if (start < message.length())
-    {
-        params.push_back(message.substr(start));
-    }
-    for (int i=0; i<params.size(); ++i) {
-      printf("params[%zu] = %s\n", i, params[i].c_str());
-    }
+  //   // Agregar el último parámetro (si existe)
+  //   if (start < message.length())
+  //   {
+  //       params.push_back(message.substr(start));
+  //   }
+  //   for (int i=0; i<params.size(); ++i) {
+  //     printf("params[%zu] = %s\n", i, params[i].c_str());
+  //   }
     
-    return params;
+  //   return params;
+  // }
+
+std::array<std::string, MAX_PARAMS> TelegramBot::_parseMessage(const std::string &message, size_t &paramCount)
+{
+  std::array<std::string, MAX_PARAMS> params;
+  paramCount = 0;
+
+  size_t start = 0;
+  size_t end = message.find(' ');
+
+  while (end != std::string::npos && paramCount < MAX_PARAMS)
+  {
+      params[paramCount++] = message.substr(start, end - start);
+      start = end + 1;
+      end = message.find(' ', start);
   }
+
+  // Agregar el último parámetro (si existe y hay espacio)
+  if (start < message.length() && paramCount < MAX_PARAMS)
+  {
+      params[paramCount++] = message.substr(start);
+  }
+
+  for (size_t i = 0; i < paramCount; ++i)
+  {
+      printf("params[%zu] = %s\n", i, params[i].c_str());
+  }
+
+  return params;
+}
 
   /**
   * @brief 

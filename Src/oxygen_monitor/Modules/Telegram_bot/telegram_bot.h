@@ -11,6 +11,7 @@
 #ifndef TELEGRAM_BOT_H
 #define TELEGRAM_BOT_H
 
+#include <cstddef>
 #include <map>
 #include <string.h>
 #include <string>
@@ -30,8 +31,7 @@
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
 #define USER_ID     "GP96_testBot"
 #define MAX_USER_COUNT 10
-#define MAX_PARAMS_SIZE 15
-#define MAX_ALERT_LIMIT 10
+#define MAX_PARAMS 10
 
 namespace Module {
 
@@ -66,7 +66,7 @@ namespace Module {
       /**
       * @brief Type for command function pointers.
       */
-      typedef std::string (TelegramBot::*commandFunction)(const std::vector<std::string> &params);
+      typedef std::string (TelegramBot::*commandFunction)(const std::array<std::string, MAX_PARAMS> &params, const size_t paramCount);
 
       /**
        * @struct telegram_Message
@@ -99,18 +99,24 @@ namespace Module {
       * Handler for telegram commands
       * @{
       */
-      std::string _commandStart(const std::vector<std::string> &params);
-      std::string _commandNewTank(const std::vector<std::string> &params);
-      std::string _commandTankStatus(const std::vector<std::string> &params);
-      std::string _commandNewGasFlow(const std::vector<std::string> &params);
-      std::string _commandEnd(const std::vector<std::string> &params);
+      // std::string _commandStart(const std::vector<std::string> &params);
+      // std::string _commandNewTank(const std::vector<std::string> &params);
+      // std::string _commandTankStatus(const std::vector<std::string> &params);
+      // std::string _commandNewGasFlow(const std::vector<std::string> &params);
+      // std::string _commandEnd(const std::vector<std::string> &params);
+      std::string _commandStart(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandNewGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandEnd(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       /** @} */
 
       bool _registerUser(std::string userId);
       bool _unregisterUser(std::string oldUserId);
       bool _isUserIdValid(std::string tankId);
       std::string _getUserId(std::string user);
-      std::vector<std::string> _parseMessage(const std::string &message);
+      // std::vector<std::string> _parseMessage(const std::string &message);
+      std::array<std::string, MAX_PARAMS> _parseMessage(const std::string &message, size_t &paramCount);
       void _sendMessage(const std::string chatId, const std::string message);
       void _requestLastMessage();
       bool _getMessageFromResponse(telegram_Message *message, const std::string &response);
@@ -122,7 +128,7 @@ namespace Module {
       const std::string botToken;                     /**< Bot API token. */
       const std::string botUrl;                       /**< Bot API URL. */
       unsigned long botLastUpdateId;                  /**< ID of the last processed update. */
-      std::vector<std::string> userId;                /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
+      std::array<std::string, MAX_USER_COUNT> userId;                /**< List of registered user IDs. */ //TODO: Cambiar por Array para que no use memoria dinámica
       int userCount;                                  /**< Number of registered users. */
       int broadcastIndex;
       bool isBroadcastInProgress;
