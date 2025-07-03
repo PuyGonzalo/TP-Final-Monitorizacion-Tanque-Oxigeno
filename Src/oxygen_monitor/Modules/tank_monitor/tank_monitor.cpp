@@ -8,48 +8,99 @@
 
  *******************************************************************************/
 
-#include "tank_monitor.h"
 #include <cstdio>
+#include "tank_monitor.h"
 
-//===========================[Private Variables]=================================
+//=====[Declaration and initialization of private global variables]============
 
 static Drivers::PressureGauge pressure_sensor(PRESS_SENSOR_PIN); ///< PressureGauge instance.
 
+//=====[Implementations of public functions]===================================
+
 namespace Module {
 
-void TankMonitor::init(const float gas_flow, const float tank_capacity, tm_function_callback fp) 
+void TankMonitor::init() 
 {
-  pressure_sensor.init();
-
-  this->gas_flow = gas_flow;
-  this->tank_capacity = tank_capacity;
-  this->callback = fp;
-
+  getInstance()._init();
 }
 
-TankMonitor::TankMonitor()
-{
-  this->tank_state = TANK_LEVEL_OK;
-  this->gas_flow = 0;
-  this->tank_capacity = 0;
-  this->callback = nullptr;
-}
-
-tank_state_t TankMonitor::update()
+void TankMonitor::update()
 {
   pressure_sensor.update();
   float last_reading = pressure_sensor.get_last_reading();
 
-  if (last_reading < TEMP_THRESHOLD) {
+  if (last_reading < PRESSURE_THRESHOLD) {
 
-    callback();
+    tank_state = TANK_LEVEL_LOW;
   }
-  return TANK_LEVEL_OK;
+  tank_state = TANK_LEVEL_OK;
+}
+
+void TankMonitor::setNewTank(const std::string tankType, const int tankCapacity, const int tankGasFlow)
+{
+  tank_type = _findType(tankType);
+  tank_capacity = tankCapacity;
+  gas_flow = (float) tankGasFlow;
+  tankRegistered = true;
+}
+
+void TankMonitor::setNewGasFlow(const int tankGasFlow)
+{
+  gas_flow = (float) tankGasFlow;
 }
 
 tank_state_t TankMonitor::getTankState()
 {
   return TANK_LEVEL_LOW;
+}
+
+void TankMonitor::getTankStatus()
+{
+
+}
+
+bool TankMonitor::isTankTypeValid(const std::string fTankType)
+{
+  return _findType(fTankType) != TANK_TYPE_NONE;
+}
+
+bool TankMonitor::isTankRegistered()
+{
+  return tankRegistered;
+}
+
+//=====[Implementations of private functions]===================================
+
+/**
+* @brief TODO: Completar
+*/
+void TankMonitor::_init()
+{
+  pressure_sensor.init();
+
+  tank_state = TANK_LEVEL_OK;
+  gas_flow = 0;
+  tank_capacity = 0;
+  tank_type = TANK_TYPE_NONE;
+  tankRegistered = false;
+}
+
+/**
+* @brief TODO: Completar
+*/
+tank_type_t TankMonitor::_findType(const std::string fTankType)
+{
+  if (fTankType == TANK_D_STR || fTankType == "d") {
+    return TANK_D;
+  } else if (fTankType == TANK_E_STR || fTankType == "e") {
+    return TANK_E;
+  } else if (fTankType == TANK_M_STR || fTankType == "m") {
+    return TANK_M;
+  } else if (fTankType == TANK_H_STR || fTankType == "h") {
+    return TANK_H;
+  } 
+
+  return TANK_TYPE_NONE;
 }
 
 }; // namespace Module

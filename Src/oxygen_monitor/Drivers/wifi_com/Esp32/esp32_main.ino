@@ -1,4 +1,3 @@
-#if 0 //Para que no moleste Clang
 #include <Arduino.h>
 #include <functional>
 #include <HTTPClient.h>
@@ -13,6 +12,7 @@
 #define RXD2 16
 #define TXD2 17
 #define LED_WIFI_STATUS 2
+#define MAX_PARAMS 10
 
 #define DEBUG_PRINTLN(format, ...) \
     Serial.printf(format "\r\n", ##__VA_ARGS__)
@@ -32,16 +32,17 @@ const char* O2MonitorHtml = R"rawliteral(
 )rawliteral";
 
 // Map of the possible commands and their associated function
-using CommandFunction = std::function<String(const std::vector<String>&)>;
+using CommandFunction = std::function<String(const std::array<String, MAX_PARAMS>&, size_t)>;
 std::map<String, CommandFunction> commandsMap;
 
 // Functions declarations
-String CommandConnectToWiFi(const std::vector<String>& params);
-String CommandPostToServer(const std::vector<String>& params);
-String CommandGet(const std::vector<String>& params);
-String CommandStatus(const std::vector<String>& params);
+String CommandConnectToWiFi(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
+String CommandPostToServer(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
+String CommandGet(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
+String CommandStatus(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
+String CommandAccessPoint(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
 
-std::vector<String> _ParseParameters(const String &input);
+std::array<String, MAX_PARAMS> _ParseParameters(const String &input, size_t &paramCount);
 bool _IsConnected();
 
 // ---------------------------------------------------------------------------------------
@@ -72,13 +73,14 @@ void loop()
         strReceived.trim();
         DEBUG_PRINTLN("Command and parameters received \n\r[%s]", strReceived.c_str());
 
-        std::vector<String> params = _ParseParameters(strReceived);
+        size_t paramCount = 0;
+        std::array<String, MAX_PARAMS> params = _ParseParameters(strReceived, paramCount);
         String cmd = params[0];
 
         if (commandsMap.find(cmd) != commandsMap.end()) 
         {
             CommandFunction commandFunction = commandsMap[cmd];
-            commandExecutionResult = commandFunction(params);
+            commandExecutionResult = commandFunction(params, paramCount);
 
             Serial2.flush();
             Serial2.print(commandExecutionResult.c_str());
@@ -94,9 +96,9 @@ void loop()
 }
 
 // ---------------------------------------------------------------------------------------
-String CommandConnectToWiFi(const std::vector<String>& params)
+String CommandConnectToWiFi(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
 {
-    if (params.size() == 3) 
+    if (paramCount == 3) 
     {
         String ssid = params[1];
         String password = params[2];
@@ -133,9 +135,9 @@ String CommandConnectToWiFi(const std::vector<String>& params)
 }
 
 // ---------------------------------------------------------------------------------------
-String CommandPostToServer(const std::vector<String>& params)
+String CommandPostToServer(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
 {
-    if (params.size() == 3) 
+    if (paramCount == 3) 
     {
         String server = params[1];
         String request = params[2];
@@ -183,9 +185,9 @@ String CommandPostToServer(const std::vector<String>& params)
 }
 
 // ---------------------------------------------------------------------------------------
-String CommandGet(const std::vector<String>& params)
+String CommandGet(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
 {
-    if (params.size() == 2) 
+    if (paramCount == 2) 
     {
         if (!_IsConnected()) 
         {
@@ -223,9 +225,9 @@ String CommandGet(const std::vector<String>& params)
 }
 
 // ---------------------------------------------------------------------------------------
-String CommandStatus(const std::vector<String>& params)
+String CommandStatus(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
 {
-    if (params.size() == 1) 
+    if (paramCount == 1) 
     {
         return (_IsConnected()) ? (RESULT_CONNECTED) : (RESULT_NOT_CONNECTED);
     }
@@ -237,13 +239,13 @@ String CommandStatus(const std::vector<String>& params)
 }
 
 // ---------------------------------------------------------------------------------------
-String CommandAccessPoint(const std::vector<String>& params)
+String CommandAccessPoint(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
 {
     static bool formSubmitted = false;
     static String network = "";
     static String password = "";
 
-    if (params.size() == 1) 
+    if (paramCount == 1) 
     {
         WiFi.disconnect(true);  // erase old config
         delay(100);
@@ -335,36 +337,28 @@ bool _IsConnected()
     return (WiFi.status() == WL_CONNECTED);
 }
 // ---------------------------------------------------------------------------------------
-std::vector<String> _ParseParameters(const String &input) 
+std::array<String, MAX_PARAMS> _ParseParameters(const String &input, size_t &paramCount) 
 {
-    size_t parameters_size = 0;
-    int index_from = -1, index_to;
+    std::array<String, MAX_PARAMS> params;
+    paramCount = 0;
 
-    if (input.length() > 0) 
-    {
-        parameters_size++;
-    }
+    int index_from = -1;
+    int index_to;
 
-    while ((index_from = input.indexOf(PARAM_SEPARATOR_CHAR, index_from + 1)) >= 0) 
-    {
-        parameters_size++;
-    }
-
-    std::vector<String> params(parameters_size);
-
-    index_from = -1;
-    for (size_t i = 0; i < parameters_size; i++) 
+    while (paramCount < MAX_PARAMS) 
     {
         index_to = input.indexOf(PARAM_SEPARATOR_CHAR, index_from + 1);
         
         if (index_to < 0)
-        index_to = input.length();
+            index_to = input.length();
 
-        params[i] = input.substring(index_from + 1, index_to);
+        params[paramCount++] = input.substring(index_from + 1, index_to);
+
+        if (index_to == input.length())
+            break;
+
         index_from = index_to;
     }
 
     return params;
 }
-
-#endif //Para que no moleste Clang

@@ -56,8 +56,10 @@ namespace Module {
 
     functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
     functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
+    functionsArray[COMMAND_TANK] = &TelegramBot::_commandTank;
     functionsArray[COMMAND_TANK_STATUS] = &TelegramBot::_commandTankStatus;
-    functionsArray[COMMAND_COMMAND_NEW_GAS_FLOW] = &TelegramBot::_commandNewGasFlow;
+    functionsArray[COMMAND_NEW_GAS_FLOW] = &TelegramBot::_commandNewGasFlow;
+    functionsArray[COMMAND_GAS_FLOW] =  &TelegramBot::_commandGasFlow;
     functionsArray[COMMAND_END] = &TelegramBot::_commandEnd;
   }
 
@@ -146,6 +148,7 @@ namespace Module {
           command_t command_nb = _findCommand(command); //Agregar verificacion de comando
           if (command_nb != ERROR_INVALID_COMMAND)
           {
+            printf("paramCount: %d\n\r", paramCount);
             messegeToSend = (this->*functionsArray[command_nb])(params, paramCount);
           }else {
             messegeToSend = _formatString(ERROR_INVALID_COMMAND_STR, command.c_str());
@@ -200,6 +203,7 @@ namespace Module {
 
   /**
   * @brief 
+  * @param
   * @param 
   * @return
   */
@@ -226,35 +230,19 @@ namespace Module {
   /**
   * @brief 
   * @param 
+  * @param 
   * @return
   */
   std::string TelegramBot::_commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
-    if (paramCount == 3) {
-      std::string numTankId = params[1];
-      std::string numTankCapacity = params[2];
-
-      if (_isStringNumeric(numTankId) && _isStringNumeric(numTankCapacity)) {
-        int tankId = std::stoi(numTankId);
-        int tankCapacity = std::stoi(numTankCapacity);
-        //Verificaciones de los numeros?
-        //calback para cargar nuevo tanque.
-        return _formatString("[Success!]\nNew Oxygen Tank with ID: [%d]\nAnd Capacity of [%d] lts.\nWas seted up.", tankId, tankCapacity);
-      }
-
-    } else if (paramCount == 4) {
-      std::string numTankId = params[1];
-      std::string numTankCapacity = params[2];
-      std::string numTankGasFlow = params[3];
-
-      if (_isStringNumeric(numTankId) && _isStringNumeric(numTankCapacity) && _isStringNumeric(numTankGasFlow)) {
-        int tankId = std::stoi(numTankId);
-        int tankCapacity = std::stoi(numTankCapacity);
-        int gasFlow = std::stoi(numTankGasFlow);
-        //Verificaciones de los numeros?
-        //calback para cargar nuevo tanque. Con los parametros necesarios.
-        return _formatString("[Success!]\nNew Tank with ID: [%d]\nCapacity of [%d] lts.\nGas flow of [%d] unidad\nWas seted up.", tankId, tankCapacity, gasFlow);
-      }
+    if (paramCount == 1) {
+      return _formatString("To register a new tank please use '/tank' command as follows:\
+      \n\n/tank type <tank type> gflow <gas flow [L/min]>\
+      \n\nOr if you don't know the tank type:\
+      \n\n/tank vol <tank volume [L]> gflow <gas flow [L/min]>\
+      \n\nExamples:\
+      \n/tank type H gflow 2\
+      \n/tank vol 30 gflow 3");
     } else {
       return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
     }
@@ -265,26 +253,137 @@ namespace Module {
   /**
   * @brief 
   * @param 
+  * @param 
   * @return
   */
-  std::string TelegramBot::_commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
+  std::string TelegramBot::_commandTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
-    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
+    if (paramCount == 5) {
+      std::string firstParam = params[1];
+      std::string tankType = params[2];
+      std::string numTankCapacity = params[2];
+      std::string numTankGasFlow = params[4];
+      
+      if (firstParam == "type") {
+        
+        if (_isStringNumeric(numTankGasFlow)) {
+          bool isTypeValid = Module::TankMonitor::getInstance().isTankTypeValid(tankType);
+
+          if (isTypeValid) {
+            int tankGasFlow = std::stoi(numTankGasFlow);
+            int tankCapacity = 0;
+            Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
+            return _formatString("[Success!]\
+                   \nNew Oxygen Tank registered:\
+                   \nType: %s\
+                   \nGas Flow: %d [L/min].\n",
+                   tankType.c_str(), tankGasFlow);
+          }
+        }
+
+      } else if (firstParam == "vol") {
+        if (_isStringNumeric(numTankGasFlow) && _isStringNumeric(numTankCapacity)) {
+          int tankGasFlow = std::stoi(numTankGasFlow);
+          int tankCapacity = std::stoi(numTankCapacity);
+          tankType = "None";
+          Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
+          return _formatString("[Success!]\
+                 \nNew Oxygen Tank registered:\
+                 \nCapacity: %d [L]\
+                 \nGas Flow: %d [L/min]",
+                 tankCapacity, tankGasFlow);
+        }
+        
+      }
+
+    } else {
+      return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_TANK_STR);
+    }
+
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_TANK_STR);
   }
 
   /**
   * @brief 
+  * @param
+  * @param 
+  * @return
+  */
+  std::string TelegramBot::_commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
+  {
+    if (paramCount == 1) {
+      //TODO: HACER
+      if (Module::TankMonitor::getInstance().isTankRegistered()) {
+        float lala = 0.3;
+        return _formatString("[Tank Status]\
+               \nThe tank will go low in approximately %f.2 min.",
+               lala);
+
+      } else {
+        return _formatString(ERROR_NO_TANK_STR);
+      }
+      
+    } else {
+      return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_TANK_STATUS_STR);
+    }
+
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_TANK_STATUS_STR);
+  }
+
+  /**
+  * @brief 
+  * @param 
   * @param 
   * @return
   */
   std::string TelegramBot::_commandNewGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
   {
+    if (paramCount == 1) {
+      return _formatString("To set a new gas flow value for the current tank please use '/gasflow' command as follows:\
+      \n\n/gasflow <gas flow [L/min]>\
+      \n\nExample:\
+      \n/gasflow 2");
+    } else {
+      return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
+    }
+
     return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
   }
 
   /**
   * @brief 
+  * @param
   * @param 
+  * @return
+  */
+  std::string TelegramBot::_commandGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
+  {
+    if (paramCount == 2) {
+      if (Module::TankMonitor::getInstance().isTankRegistered()) {
+        std::string numTankGasFlow = params[1];
+
+        if (_isStringNumeric(numTankGasFlow)) {
+          int tankGasFlow = std::stoi(numTankGasFlow);
+          Module::TankMonitor::getInstance().setNewGasFlow(tankGasFlow);
+          return _formatString("[Success!]\
+                 \nNew gas flow seted up with the value: %d [L/min]",
+                 tankGasFlow);
+
+        }  
+      } else {
+        return _formatString(ERROR_NO_TANK_STR);
+      }
+    } else {
+      return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_GAS_FLOW_STR);
+    }
+
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_GAS_FLOW_STR);
+  }
+
+  /**
+  * @brief 
+  * @param params
+  * @param paramCount
   * @return
   */
   std::string TelegramBot::_commandEnd(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount)
@@ -302,7 +401,7 @@ namespace Module {
       return result;
     }
 
-    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_END_STR);
   }
 
   /**
@@ -548,15 +647,19 @@ std::array<std::string, MAX_PARAMS> TelegramBot::_parseMessage(const std::string
   */
   command_t TelegramBot::_findCommand(const std::string command)
   {
-    if (command == "/start") {
+    if (command == COMMAND_START_STR) {
       return COMMAND_START;
-    } else if (command == "/new_tank") {
+    } else if (command == COMMAND_NEW_TANK_STR) {
       return COMMAND_NEW_TANK;
-    } else if (command == "/tank_status") {
+    } else if (command == COMMAND_TANK_STR) {
+      return COMMAND_TANK;
+    } else if (command == COMMAND_TANK_STATUS_STR) {
       return COMMAND_TANK_STATUS;
-    } else if (command == "/new_gas_flow") {
-      return COMMAND_COMMAND_NEW_GAS_FLOW;
-    } else if (command == "/end") {
+    } else if (command == COMMAND_NEW_GAS_FLOW_STR) {
+      return COMMAND_NEW_GAS_FLOW;
+    } else if (command == COMMAND_GAS_FLOW_STR) {
+      return COMMAND_GAS_FLOW;
+    } else if (command == COMMAND_END_STR) {
       return COMMAND_END;
     }
 

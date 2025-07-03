@@ -10,10 +10,35 @@
 #define TANK_MONITOR_H
 
 #include "mbed.h"
+#include <string>
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define TEMP_THRESHOLD 23.5f //TODO: Cambiar 
+#define PRESSURE_THRESHOLD 0.5f 
+#define TANK_D_FACTOR 2.3f      // [L/bar]
+#define TANK_E_FACTOR 4.1f      // [L/bar]
+#define TANK_M_FACTOR 22.6f     // [L/bar]
+#define TANK_H_FACTOR 45.5f     // [L/bar]
+
+/**
+ * @brief Command string for starting the bot session.
+ */
+const char TANK_D_STR[]              = "D";
+
+/**
+ * @brief Command string for starting the bot session.
+ */
+const char TANK_E_STR[]              = "E";
+
+/**
+ * @brief Command string for starting the bot session.
+ */
+const char TANK_M_STR[]              = "M";
+
+/**
+ * @brief Command string for starting the bot session.
+ */
+const char TANK_H_STR[]              = "H";
 
 //===========================[Module Types]=====================================
 
@@ -26,9 +51,16 @@ typedef enum tank_state {
 } tank_state_t;
 
 /**
- * @brief Typedef for callback function.
+ * @brief TODO: Completar
  */
-typedef void (*tm_function_callback)();
+typedef enum tank_type {
+  TANK_D = 0,
+  TANK_E = 1,
+  TANK_M = 2,
+  TANK_H = 3,
+  TANK_TYPE_NONE = 4
+} tank_type_t;
+
 
 namespace Module {
 
@@ -37,7 +69,7 @@ class TankMonitor {
  public:
 
   static TankMonitor& getInstance(){
-  static TankMonitor instance;
+    static TankMonitor instance;
 
     return instance;
   }
@@ -47,37 +79,57 @@ class TankMonitor {
   
   /**
    * @brief Initializes Pressure Monitor Module
-   * @param gas_flow Actual gas flow used on the tank. Must be provided by the user through TelegramBot.
-   * @param tank_capacity Capacity of the tank. Must be provided by the user through TelegramBot.
-   * @param fp Function pointer to the callback.
    */
-  void init(const float gas_flow, const float tank_capacity, tm_function_callback fp);
+  void init();
 
   /**
    * @brief TODO: Completar
-   * @return state of the tank (either OK or LOW).
    */
-  tank_state_t update();
+  void update();
 
+  /**
+   * @brief TODO: Completar
+   */
+  void setNewTank(const std::string tankType, const int tankCapacity, const int tankGasFlow);
+
+  /**
+   * @brief TODO: Completar
+   */
+  void setNewGasFlow(const int tankGasFlow);
+  /**
+   * @brief TODO: Completar
+   */
   tank_state_t getTankState();
+
+  /**
+   * @brief TODO: Completar
+   */
+  void getTankStatus();
+
+  /**
+  * @brief TODO: Completar
+  */
+  bool isTankTypeValid(const std::string fTankType);
+
+  /**
+  * @brief TODO: Completar
+  */
+  bool isTankRegistered();
+
 
  private:
   
-   /**
-   * @brief Pressure Monitor Module constructor.
-   */
-  TankMonitor();
-
-  /**
-   * @brief Pressure Monitor Module destructor.
-   */
+  TankMonitor() {};
   ~TankMonitor() = default;
 
+  void _init();
+  tank_type_t _findType(const std::string fTankType);
+
   tank_state_t tank_state;
+  tank_type_t tank_type;
   float gas_flow;
   float tank_capacity;
-  tm_function_callback callback;
-
+  bool tankRegistered;
 
 }; // Class PressureMonitor
 

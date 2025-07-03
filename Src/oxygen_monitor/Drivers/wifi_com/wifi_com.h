@@ -25,9 +25,9 @@ namespace Drivers {
     public:
 
       static WifiCom& getInstance(){
-            static WifiCom instance(WIFI_PIN_TX, WIFI_PIN_RX, WIFI_BAUD_RATE);
+        static WifiCom instance(WIFI_PIN_TX, WIFI_PIN_RX, WIFI_BAUD_RATE);
 
-            return instance;
+        return instance;
       }
 
       WifiCom(const WifiCom&) = delete;

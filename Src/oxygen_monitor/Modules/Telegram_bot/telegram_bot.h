@@ -25,7 +25,7 @@
 #include "mbed.h"
 #include "tank_monitor.h"
 
-#define NB_COMMANDS 5
+#define NB_COMMANDS 7
 
 #define BOT_API_URL "https://api.telegram.org/bot"
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
@@ -106,8 +106,10 @@ namespace Module {
       // std::string _commandEnd(const std::vector<std::string> &params);
       std::string _commandStart(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandNewTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandTank(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandTankStatus(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandNewGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
+      std::string _commandGasFlow(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       std::string _commandEnd(const std::array<std::string, MAX_PARAMS> &params, size_t paramCount);
       /** @} */
 
