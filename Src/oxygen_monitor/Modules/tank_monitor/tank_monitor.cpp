@@ -10,11 +10,11 @@
 #include <cstdio>
 #include "tank_monitor.h"
 
-//=====[Declaration and initialization of private global variables]============
+//=====[Declaration and initialization of private global variables]==============
 
-static Drivers::PressureGauge pressure_sensor(PRESS_SENSOR_PIN); ///< PressureGauge instance.
+static Drivers::PressureGauge pressure_sensor(PRESS_SENSOR_PIN); /**< PressureGauge instance. */
 
-//=====[Implementations of public functions]===================================
+//=====[Implementations of public methods]============+++=========================
 
 namespace Module {
 
@@ -50,7 +50,7 @@ namespace Module {
 
   tank_state_t TankMonitor::getTankState()
   {
-    return TANK_LEVEL_LOW;
+    return TANK_LEVEL_OK;
   }
 
   float TankMonitor::getTankStatus()
@@ -62,7 +62,7 @@ namespace Module {
     float last_reading = pressure_sensor.get_last_reading();
 
     if (tank_type == TANK_TYPE_NONE) {
-      float availabeVolume = (last_reading / TANK_TYPICAL_PRESS) * tank_capacity;
+      float availabeVolume = (last_reading / TANK_NOMINAL_PRESS) * tank_capacity;
       float time = availabeVolume / gas_flow;
 
       return time; // [min]
@@ -85,7 +85,7 @@ namespace Module {
     return tankRegistered;
   }
 
-  //=====[Implementations of private functions]===================================
+  //=====[Implementations of private methods]===================================
 
   /**
   * @brief TODO: Completar

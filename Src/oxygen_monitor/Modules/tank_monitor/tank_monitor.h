@@ -14,9 +14,9 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define PRESSURE_THRESHOLD 14.0f     // [bar] TODO: Cambiar!!! Esto no esta en bar
-#define TANK_RESERVE 14.0f           // [bar]
-#define TANK_TYPICAL_PRESS 138.0f   // [bar]
+#define PRESSURE_THRESHOLD 34.0f    // [bar]
+#define TANK_RESERVE 34.5f          // [bar]
+#define TANK_NOMINAL_PRESS 138.0f   // [bar]   Typical nominal press value for medical tanks.
 #define TANK_D_FACTOR 2.3f          // [L/bar]
 #define TANK_E_FACTOR 4.1f          // [L/bar]
 #define TANK_M_FACTOR 22.6f         // [L/bar]

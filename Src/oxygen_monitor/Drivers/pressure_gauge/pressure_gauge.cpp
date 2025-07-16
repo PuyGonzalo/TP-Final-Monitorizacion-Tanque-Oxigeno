@@ -22,7 +22,7 @@ namespace Drivers {
   void PressureGauge::init()
   {
     last_reading = 0.0;
-    ref = 5.0;
+    ref = 3.3f;
   }
 
   //-------------------------------------------------------------------------------
@@ -37,15 +37,16 @@ namespace Drivers {
   void PressureGauge::update()
   {
     float analog_reading = _pin.read();
-    printf("Analog reading: %.2f V\n\r", analog_reading);
-    if (analog_reading < MIN_READING_VALUE) {
-      analog_reading = MIN_READING_VALUE;
+    float voltage = analog_reading * ref;
+    printf("Analog reading: %.2f V\n\r", voltage);
+    if (voltage < MIN_READING_VALUE) {
+      voltage = MIN_READING_VALUE;
     }
-    else if (analog_reading > MAX_READING_VALUE ) {
-      analog_reading = MAX_READING_VALUE;
+    else if (voltage > MAX_READING_VALUE ) {
+      voltage = MAX_READING_VALUE;
     }
 
-    float pressure = (analog_reading - MIN_READING_VALUE) * (MAX_PRESS_VALUE / (MAX_READING_VALUE - MIN_READING_VALUE));
+    float pressure = (voltage - MIN_READING_VALUE) * (MAX_PRESS_VALUE / (MAX_READING_VALUE - MIN_READING_VALUE));
 
     last_reading = pressure;
 

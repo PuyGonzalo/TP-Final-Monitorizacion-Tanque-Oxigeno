@@ -78,7 +78,7 @@ namespace Module {
 
       case MONITOR:
       {
-        if ( isAlertTimeoutFinished && !(Module::TankMonitor::getInstance().getTankState()) ) {
+        if ( isAlertTimeoutFinished && (Module::TankMonitor::getInstance().getTankState() == TANK_LEVEL_LOW) ) {
 
           isTimeoutFinished = false;
           alertTimeout.detach();
@@ -99,7 +99,6 @@ namespace Module {
         if (!Drivers::WifiCom::getInstance().isBusy()) {
           std::string messegeToSend = ALERT_TANK_EMPTY;
           messegeToSend += "\n";
-          //std::string userId = _getUserId();
           _sendMessage(userId[broadcastIndex], messegeToSend);
           isBroadcastInProgress = userCount > 1 ? true : false;
           botState = WAITING_RESPONSE;

@@ -24,9 +24,9 @@ static Module::TelegramBot telegramBot(BOT_API_URL, BOT_TOKEN);
 static Timeout o2MonitorTimeout;
 static bool isTimeoutFinished;
 
-//=====[Implementations of public functions]===================================
+//=====[Implementations of public methods]======================================
 
-//----static-------------------------------------------------------------------
+
 void OxygenMonitor::init()
 {
   getInstance()._init();
@@ -46,16 +46,15 @@ void OxygenMonitor::update()
     {
       Module::TankMonitor::getInstance().update();
       o2MonitorTimeout.detach();
-      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, 10s); //TODO: Cambiar por 60 segundos
+      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, 2s); //TODO: Cambiar por 60 segundos
       isTimeoutFinished = false;
     }
     Drivers::WifiCom::getInstance().update();
     telegramBot.update();
 }
 
-//=====[Implementations of private functions]==================================
+//=====[Implementations of private methods]==================================
 
-//----private------------------------------------------------------------------
 OxygenMonitor::OxygenMonitor() 
     : mDelay(SYSTEM_TIME_INCREMENT_MS)
 {}

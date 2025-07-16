@@ -13,12 +13,12 @@
 #include "PinNames.h"
 #include "mbed.h"
 
-//=========================[Module Defines]=====================================
+//=========================[Driver Defines]=====================================
 
 #define PRESS_SENSOR_PIN A1
-#define MIN_READING_VALUE  0.5f
-#define MAX_READING_VALUE  4.5f
-#define MAX_PRESS_VALUE 300 // [bar] depende del modelo comprado.
+#define MIN_READING_VALUE  0.36f // ~ 0.5 V * 0.73 (voltage divider)
+#define MAX_READING_VALUE  3.3f // ~ 4.5 V * 0.73 (voltage divider)
+#define MAX_PRESS_VALUE 200 // [bar] Depends on pressure gauge model.
 
 namespace Drivers {
 
@@ -52,8 +52,8 @@ class PressureGauge {
  private:
 
   AnalogIn _pin;        /**< AnalogIn pin. */
-  float last_reading;   /**< Last value read. */
-  float ref;            /**<  */ //TODO: Completar esto.
+  float last_reading;   /**< Last pressure value read. */
+  float ref;            /**< Vref value of ADC. On nucleo boars it's usually connected to 3.3 V. */
 
 }; // Class PreassureGauge
 
