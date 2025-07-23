@@ -51,6 +51,7 @@ const char TANK_H_STR[]              = "H";
 typedef enum tank_state {
   TANK_LEVEL_OK = 0,
   TANK_LEVEL_LOW = 1,
+  TANK_LEVEL_UNKNOWN = 2
 } tank_state_t;
 
 /**
@@ -94,12 +95,12 @@ class TankMonitor {
   /**
    * @brief TODO: Completar
    */
-  void setNewTank(const std::string tankType, const int tankCapacity, const int tankGasFlow);
+  void setNewTank(const std::string tankType, const int tankCapacity, const float tankGasFlow);
 
   /**
    * @brief TODO: Completar
    */
-  void setNewGasFlow(const int tankGasFlow);
+  void setNewGasFlow(const float tankGasFlow);
 
   /**
    * @brief TODO: Completar

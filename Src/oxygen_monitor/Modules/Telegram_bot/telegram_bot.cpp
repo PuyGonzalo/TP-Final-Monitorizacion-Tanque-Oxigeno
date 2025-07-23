@@ -22,7 +22,7 @@
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout tBotTimeout;                   /**<  */ //TODO: Cambiar al non blocking delay >:(
+static Timeout tBotTimeout;                   /**<  */
 static bool isTimeoutFinished;                /**<  */
 
 static Timeout alertTimeout;                  /**<  */
@@ -78,18 +78,19 @@ namespace Module {
 
       case MONITOR:
       {
+        printf("\n\r[DEBUG] Tank State: %d\n\r", Module::TankMonitor::getInstance().getTankState());
         if ( isAlertTimeoutFinished && (Module::TankMonitor::getInstance().getTankState() == TANK_LEVEL_LOW) ) {
 
-          isTimeoutFinished = false;
+          isAlertTimeoutFinished = false;
           alertTimeout.detach();
-          alertTimeout.attach(&onAlertTimeoutFinishedCallback, 5s);
+          alertTimeout.attach(&onAlertTimeoutFinishedCallback, 60s);
           botState = SEND_ALERT;
           
         } else {
           botState = REQUEST_LAST_MESSAGE;
           isTimeoutFinished = false;
           tBotTimeout.detach();
-          tBotTimeout.attach(&onTBotTimeoutFinishedCallback,2s);
+          tBotTimeout.attach(&onTBotTimeoutFinishedCallback, 2s);
         }
       }
       break;
@@ -268,7 +269,7 @@ namespace Module {
           bool isTypeValid = Module::TankMonitor::getInstance().isTankTypeValid(tankType);
 
           if (isTypeValid) {
-            int tankGasFlow = std::stoi(numTankGasFlow);
+            float tankGasFlow = std::stof(numTankGasFlow);
             int tankCapacity = 0;
             Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
             return _formatString("[Success!]\
@@ -310,7 +311,6 @@ namespace Module {
   std::string TelegramBot::_commandTankStatus(const ParametersArray &params, size_t paramCount)
   {
     if (paramCount == 1) {
-      //TODO: HACER
       if (Module::TankMonitor::getInstance().isTankRegistered()) {
         float time = Module::TankMonitor::getInstance().getTankStatus();
 
@@ -376,7 +376,7 @@ namespace Module {
         std::string numTankGasFlow = params[1];
 
         if (_isStringNumeric(numTankGasFlow)) {
-          int tankGasFlow = std::stoi(numTankGasFlow);
+          float tankGasFlow = std::stof(numTankGasFlow);
           Module::TankMonitor::getInstance().setNewGasFlow(tankGasFlow);
           return _formatString("[Success!]\
                  \nNew gas flow seted up with the value: %d [L/min]",
@@ -689,7 +689,25 @@ namespace Module {
   */
   bool TelegramBot::_isStringNumeric(const std::string &str)
   {
-    return str.find_first_not_of( "0123456789" ) == string::npos;
+    if (str.empty()) return false;
+
+    bool dot_found = false;
+    bool digit_found = false;
+
+    size_t i = 0;
+
+    for (; i < str.size(); ++i) {
+      char c = str[i];
+      if (isdigit(c)) {
+        digit_found = true;
+      } else if (c == '.') {
+          if (dot_found) return false;  // more than 1 '.' is not valid
+          dot_found = true;
+      } else {
+          return false; // invalid character
+      }
+    }
+    return digit_found;
   }
 
 
@@ -708,7 +726,7 @@ static void onTBotTimeoutFinishedCallback()
 */
 static void onAlertTimeoutFinishedCallback()
 {
-  isTimeoutFinished = true;
+  isAlertTimeoutFinished = true;
 }
 
   // Backup de funcion _parseMessage con Vector

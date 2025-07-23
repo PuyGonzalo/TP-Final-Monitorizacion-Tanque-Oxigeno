@@ -31,29 +31,35 @@ namespace Module {
     if (last_reading < PRESSURE_THRESHOLD) {
 
       tank_state = TANK_LEVEL_LOW;
+    } else {
+      tank_state = TANK_LEVEL_OK;
     }
-    tank_state = TANK_LEVEL_OK;
+    
+    // Check if sensor is disconnected:
+    if (last_reading < 0.1f) {
+      tank_state = TANK_LEVEL_UNKNOWN;
+    }
   }
 
-  void TankMonitor::setNewTank(const std::string tankType, const int tankCapacity, const int tankGasFlow)
+  void TankMonitor::setNewTank(const std::string tankType, const int tankCapacity, const float tankGasFlow)
   {
     tank_type = _findType(tankType);
     tank_capacity = (float) tankCapacity;
-    gas_flow = (float) tankGasFlow;
+    gas_flow = tankGasFlow;
     tankRegistered = true;
   }
 
-  void TankMonitor::setNewGasFlow(const int tankGasFlow)
+  void TankMonitor::setNewGasFlow(const float tankGasFlow)
   {
-    gas_flow = (float) tankGasFlow;
+    gas_flow = tankGasFlow;
   }
 
   tank_state_t TankMonitor::getTankState()
   {
-    return TANK_LEVEL_OK;
+    return tank_state;
   }
 
-  float TankMonitor::getTankStatus()
+  float TankMonitor::getTankStatus() //TODO: Reveer el calculo del tiempo.
   {
 
     if (!tankRegistered) return 0.0;
@@ -65,13 +71,13 @@ namespace Module {
       float availabeVolume = (last_reading / TANK_NOMINAL_PRESS) * tank_capacity;
       float time = availabeVolume / gas_flow;
 
-      return time; // [min]
+      return time;
     } else {
       float factor = _getTypeFactor();
       float availabeVolume = (last_reading - TANK_RESERVE) * factor;
       float time = availabeVolume / gas_flow;
 
-      return time; // [min]
+      return time;
     }
   }
 
@@ -94,7 +100,7 @@ namespace Module {
   {
     pressure_sensor.init();
 
-    tank_state = TANK_LEVEL_OK;
+    tank_state = TANK_LEVEL_UNKNOWN;
     gas_flow = 0;
     tank_capacity = 0;
     tank_type = TANK_TYPE_NONE;
