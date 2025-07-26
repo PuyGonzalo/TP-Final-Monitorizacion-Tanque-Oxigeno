@@ -62,28 +62,109 @@ const char COMMAND_GAS_FLOW_STR[]       = "/gasflow";
 const char COMMAND_END_STR[]       = "/end";
 
 /**
+ * @brief Command string for ending the bot session.
+ */
+const char NEW_TANK_COMMAND_RESPONSE_STR[]                        = "To register a new tank please use '/tank' command as follows:\
+                                                                  \n\n/tank type <tank type> gflow <gas flow [L/min]>\
+                                                                  \n\nOr if you don't know the tank type:\
+                                                                  \n\n/tank vol <tank volume [L]> gflow <gas flow [L/min]>\
+                                                                  \n\nExamples:\
+                                                                  \n/tank type H gflow 2\
+                                                                  \n/tank vol 30 gflow 3";
+
+/**
+ * @brief 
+ */
+const char START_COMMAND_USER_REGISTERED_RESPONSE_STR[]           = "User registered correctly\nHello %s!";
+
+/**
+ * @brief 
+ */
+const char START_COMMAND_USER_ALREADY_REGISTERED_RESPONSE_STR[]   = "User '%s' is already registered!";
+
+/**
+ * @brief 
+ */
+const char NEW_GAS_FLOW_COMMAND_RESPONSE_STR[]                    = "To set a new gas flow value for the current tank please use '/gasflow' command as follows:\
+                                                                    \n\n/gasflow <gas flow [L/min]>\
+                                                                    \n\nExample:\
+                                                                    \n/gasflow 2";
+
+/**
+ * @brief 
+ */
+const char GAS_FLOW_COMMAND_RESPONSE_STR[]                        = "[Success!]\
+                                                                    \nNew gas flow seted up with the value: %d [L/min]";
+
+/**
+ * @brief 
+ */
+const char STATUS_COMMAND_RESPONSE_HOURS_STR[]                    = "[Tank Status]\
+                                                                    \nThe tank will go low in approximately %d hs. and %d min.";
+
+/**
+ * @brief 
+ */
+const char STATUS_COMMAND_RESPONSE_MINUTES_STR[]                  = "[Tank Status]\
+                                                                    \nThe tank will go low in approximately %d min.";
+
+
+/**
+ * @brief 
+ */
+const char TANK_COMMAND_TYPE_RESPONSE_STR[]                       = "[Success!]\
+                                                                    \nNew Oxygen Tank registered:\
+                                                                    \nType: %s\
+                                                                    \nGas Flow: %d [L/min].\n";
+
+/**
+ * @brief 
+ */
+const char TANK_COMMAND_VOL_RESPONSE_STR[]                        = "[Success!]\
+                                                                    \nNew Oxygen Tank registered:\
+                                                                    \nCapacity: %d [L]\
+                                                                    \nGas Flow: %d [L/min]";
+
+/**
+ * @brief 
+ */
+const char END_COMMAND_USR_REMOVED_RESPONSE_STR[]                 = "User removed correctly\nGoodbye %s!";
+
+/**
+ * @brief 
+ */
+const char END_COMMAND_USR_NOTFOUND_RESPONSE_STR[]                = "User '%s' is not registered!\nUse '/start' command if you want to register";
+
+/**
  * @brief Error message for invalid commands.
  */
-const char ERROR_INVALID_COMMAND_STR[]      = "[ERROR]\nInvalid command [%s].";
+const char ERROR_INVALID_COMMAND_STR[]                            = "[ERROR]\nInvalid command [%s].";
 
 /**
  * @brief Error message for unregistered or unauthorized users.
  */
-const char ERROR_INVALID_USER_STR[]         = "[ERROR]\nInvalid user [%s].";
+const char ERROR_INVALID_USER_STR[]                               = "[ERROR]\nInvalid user [%s].";
 
 /**
  * @brief Error message for invalid or missing parameters.
  */
-const char ERROR_INVALID_PARAMETERS_STR[]   = "[ERROR]\nInvalid parameters for  [%s] command.";
+const char ERROR_INVALID_PARAMETERS_STR[]                         = "[ERROR]\nInvalid parameters for  [%s] command.";
 
 /**
  * @brief Error message for unregistered tank.
  */
-const char ERROR_NO_TANK_STR[]      = "[Error]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
+const char ERROR_NO_TANK_STR[]                                    = "[Error]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
+
+/**
+ * @brief 
+ */
+const char ERROR_STATUS_COMMAND_STR[]                             = "[Tank Status Error]\
+                                                                    \nCan't get tank status.\
+                                                                    \nPlease try again.";
 
 /**
  * @brief Alert message indicating the tank is low or empty.
  */
-const char ALERT_TANK_EMPTY[]               = "[ALERT]\nTank is low!";
+const char ALERT_TANK_EMPTY[]                                     = "[ALERT]\nTank is low!";
 
 #endif // TELEGRAM_BOT_LIB_H

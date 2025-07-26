@@ -10,8 +10,6 @@
 
 #include "delay.h"
 
-#define SYSTEM_TIME_INCREMENT_MS   1000
-
 namespace Module {
 
   class OxygenMonitor
@@ -43,7 +41,7 @@ namespace Module {
       ~OxygenMonitor() = default;
       void _init();
       static void onO2MonitorTimeoutFinishedCallback(); 
-      Util::Delay mDelay;
+      // Util::Delay mDelay;
   };
 
 } // namespace Subsystems

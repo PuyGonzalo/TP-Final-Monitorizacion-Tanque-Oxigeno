@@ -31,6 +31,8 @@ static bool isAlertTimeoutFinished;           /**<  */
 static void onTBotTimeoutFinishedCallback();
 static void onAlertTimeoutFinishedCallback();
 
+static constexpr chrono::seconds alertDelay = 60s;
+
 //=====[Implementations of public functions]===================================
 
 namespace Module {
@@ -51,7 +53,7 @@ namespace Module {
     broadcastIndex = 0;
     isTimeoutFinished = false;
     isAlertTimeoutFinished = true; //El estado inicial de esta variable DEBE ser true.
-    isBroadcastInProgress = false;
+    broadcastRetryCount = 0;
 
     functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
     functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
@@ -101,8 +103,7 @@ namespace Module {
           std::string messegeToSend = ALERT_TANK_EMPTY;
           messegeToSend += "\n";
           _sendMessage(userId[broadcastIndex], messegeToSend);
-          isBroadcastInProgress = userCount > 1 ? true : false;
-          botState = WAITING_RESPONSE;
+          botState = userCount > 1 ? WAITING_BROADCAST_RESPONSE : WAITING_RESPONSE;
         }
       }
       break;
@@ -159,38 +160,51 @@ namespace Module {
         _sendMessage(botLastMessage.fromId, messegeToSend);
         isTimeoutFinished = false;
         tBotTimeout.detach();
-        tBotTimeout.attach(&onTBotTimeoutFinishedCallback,5s);
+        tBotTimeout.attach(&onTBotTimeoutFinishedCallback, 5s);
         botState = WAITING_RESPONSE;
       }
       break;
 
       case WAITING_RESPONSE:
       {
-        std::string response;
-        if (isTimeoutFinished || (Drivers::WifiCom::getInstance().getPostResponse(&response) && botResponse.compare(RESULT_ERROR) == 0 )) {
-          if (isBroadcastInProgress)
+        const bool isResponseReady = Drivers::WifiCom::getInstance().getPostResponse(&botResponse);
+        if (isTimeoutFinished || ( isResponseReady && botResponse.compare(RESULT_ERROR) == 0 ))
+        {
+          botState = INIT;
+        }
+        else if (Drivers::WifiCom::getInstance().getPostResponse(&botResponse))
+        {
+          botState = INIT;
+        }
+      }
+      break;
+
+      case WAITING_BROADCAST_RESPONSE:
+      {
+        const bool isResponseReady = Drivers::WifiCom::getInstance().getPostResponse(&botResponse);
+        if (isTimeoutFinished || ( isResponseReady && botResponse.compare(RESULT_ERROR) == 0 ))
+        {
+          if (broadcastRetryCount < BROADCAST_MAX_RETRIES)
           {
-            // SI falló y hay un broadcast en progreso, reintentar
-            isBroadcastInProgress = true;
+            broadcastRetryCount++;
+            tBotTimeout.detach();
+            tBotTimeout.attach(&onTBotTimeoutFinishedCallback, 8s);
             botState = SEND_ALERT;
           } else {
             broadcastIndex = 0;
-            isBroadcastInProgress = false;
+            broadcastRetryCount = 0;
             botState = INIT;
           }
-        } else if (Drivers::WifiCom::getInstance().getPostResponse(&response)) {
-          if (isBroadcastInProgress){
-            broadcastIndex++;
-            if (broadcastIndex >= userCount)
-            {
-              broadcastIndex = 0;
-              isBroadcastInProgress = false;
-              botState = INIT;
-            } else {
-              botState = SEND_ALERT;
-            }
-          }else {
+        } else if (Drivers::WifiCom::getInstance().getPostResponse(&botResponse)) {
+          broadcastIndex++;
+          if (broadcastIndex >= userCount)
+          {
+            broadcastIndex = 0;
+            broadcastRetryCount = 0;
             botState = INIT;
+          } else {
+            broadcastRetryCount = 0;
+            botState = SEND_ALERT;
           }
         }
       }
@@ -214,11 +228,11 @@ namespace Module {
 
       if (registerSuccess)
       {
-        result = _formatString("User registered correctly\nHello %s!", botLastMessage.fromName.c_str());
+        result = _formatString(START_COMMAND_USER_REGISTERED_RESPONSE_STR, botLastMessage.fromName.c_str());
         // Debug:
         for (int i = 0; i < userCount; ++i) { printf("Success! users ID:[ %s ]\r\n", userId[i].c_str()); }
       } else {
-        result = _formatString("User '%s' is already registered!", botLastMessage.fromName.c_str());
+        result = _formatString(START_COMMAND_USER_ALREADY_REGISTERED_RESPONSE_STR, botLastMessage.fromName.c_str());
       }
       return result;
     }
@@ -235,13 +249,7 @@ namespace Module {
   std::string TelegramBot::_commandNewTank(const ParametersArray &params, size_t paramCount)
   {
     if (paramCount == 1) {
-      return _formatString("To register a new tank please use '/tank' command as follows:\
-      \n\n/tank type <tank type> gflow <gas flow [L/min]>\
-      \n\nOr if you don't know the tank type:\
-      \n\n/tank vol <tank volume [L]> gflow <gas flow [L/min]>\
-      \n\nExamples:\
-      \n/tank type H gflow 2\
-      \n/tank vol 30 gflow 3");
+      return NEW_TANK_COMMAND_RESPONSE_STR;
     } else {
       return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
     }
@@ -272,11 +280,7 @@ namespace Module {
             float tankGasFlow = std::stof(numTankGasFlow);
             int tankCapacity = 0;
             Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
-            return _formatString("[Success!]\
-                   \nNew Oxygen Tank registered:\
-                   \nType: %s\
-                   \nGas Flow: %d [L/min].\n",
-                   tankType.c_str(), tankGasFlow);
+            return _formatString(TANK_COMMAND_TYPE_RESPONSE_STR, tankType.c_str(), tankGasFlow);
           }
         }
 
@@ -286,11 +290,7 @@ namespace Module {
           int tankCapacity = std::stoi(numTankCapacity);
           tankType = "None";
           Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
-          return _formatString("[Success!]\
-                 \nNew Oxygen Tank registered:\
-                 \nCapacity: %d [L]\
-                 \nGas Flow: %d [L/min]",
-                 tankCapacity, tankGasFlow);
+          return _formatString(TANK_COMMAND_VOL_RESPONSE_STR, tankCapacity, tankGasFlow);
         }
         
       }
@@ -318,18 +318,12 @@ namespace Module {
           int hours = (int) (time / 60.0);
           float minutesLeft = time - (hours * 60.0);
           int minutes = (int) (minutesLeft + 0.5);
-          return _formatString("[Tank Status]\
-                 \nThe tank will go low in approximately %d hs. and %d min.",
-                 hours, minutes);
+          return _formatString(STATUS_COMMAND_RESPONSE_HOURS_STR, hours, minutes);
         } else if (time < 60.0){
           int timeLeft = (int) time;
-          return _formatString("[Tank Status]\
-                 \nThe tank will go low in approximately %d min.",
-                 timeLeft);
+          return _formatString(STATUS_COMMAND_RESPONSE_MINUTES_STR, timeLeft);
         } else {
-          return _formatString("[Tank Status Error]\
-                 \nCan't get tank status.\
-                 \nPlease try again.");
+          return ERROR_STATUS_COMMAND_STR;
         }
 
       } else {
@@ -352,10 +346,7 @@ namespace Module {
   std::string TelegramBot::_commandNewGasFlow(const ParametersArray &params, size_t paramCount)
   {
     if (paramCount == 1) {
-      return _formatString("To set a new gas flow value for the current tank please use '/gasflow' command as follows:\
-      \n\n/gasflow <gas flow [L/min]>\
-      \n\nExample:\
-      \n/gasflow 2");
+      return NEW_GAS_FLOW_COMMAND_RESPONSE_STR;
     } else {
       return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_NEW_TANK_STR);
     }
@@ -378,9 +369,7 @@ namespace Module {
         if (_isStringNumeric(numTankGasFlow)) {
           float tankGasFlow = std::stof(numTankGasFlow);
           Module::TankMonitor::getInstance().setNewGasFlow(tankGasFlow);
-          return _formatString("[Success!]\
-                 \nNew gas flow seted up with the value: %d [L/min]",
-                 tankGasFlow);
+          return _formatString(GAS_FLOW_COMMAND_RESPONSE_STR, tankGasFlow);
 
         }  
       } else {
@@ -407,9 +396,9 @@ namespace Module {
 
       if (unregisterSuccess)
       {
-        result = _formatString("User removed correctly\nGoodbye %s!", botLastMessage.fromName.c_str());
+        result = _formatString(END_COMMAND_USR_REMOVED_RESPONSE_STR, botLastMessage.fromName.c_str());
       } else {
-        result = _formatString("User '%s' is not registered!\nUse '/start' command if you want to register", botLastMessage.fromName.c_str());
+        result = _formatString(END_COMMAND_USR_NOTFOUND_RESPONSE_STR, botLastMessage.fromName.c_str());
       }
       return result;
     }
@@ -432,7 +421,6 @@ namespace Module {
       if (userCount == MAX_USER_COUNT){
         return false;
       }
-      //userId.insert(userId.begin(), newUserId);  // Insert at beginning
       userId[userCount] = newUserId;
       userCount++;
       return true;

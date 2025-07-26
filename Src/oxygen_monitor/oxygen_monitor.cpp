@@ -11,10 +11,9 @@
 #include "delay.h"
 #include "mbed.h"
 #include "telegram_bot.h"
-// #include "tank_monitor.h"
+#include "tank_monitor.h"
 #include "wifi_com.h"
 #include "util.h"
-#include <cstdio>
 
 namespace Module {
 
@@ -23,6 +22,7 @@ namespace Module {
 static Module::TelegramBot telegramBot(BOT_API_URL, BOT_TOKEN);
 static Timeout o2MonitorTimeout;
 static bool isTimeoutFinished;
+static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 2s;
 
 //=====[Implementations of public methods]======================================
 
@@ -33,11 +33,6 @@ void OxygenMonitor::init()
   isTimeoutFinished = true;
 }
 
-//----static-------------------------------------------------------------------
-// FishTankGuardian* FishTankGuardian::GetInstance()
-// {
-//     return mInstance;
-// }
 
 //-----------------------------------------------------------------------------
 void OxygenMonitor::update()
@@ -46,7 +41,7 @@ void OxygenMonitor::update()
     {
       Module::TankMonitor::getInstance().update();
       o2MonitorTimeout.detach();
-      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, 2s); //TODO: Cambiar por 60 segundos
+      o2MonitorTimeout.attach(&onO2MonitorTimeoutFinishedCallback, O2_MONITOR_TIMEOUT);
       isTimeoutFinished = false;
     }
     Drivers::WifiCom::getInstance().update();
@@ -55,9 +50,8 @@ void OxygenMonitor::update()
 
 //=====[Implementations of private methods]==================================
 
-OxygenMonitor::OxygenMonitor() 
-    : mDelay(SYSTEM_TIME_INCREMENT_MS)
-{}
+OxygenMonitor::OxygenMonitor() {}
+
 
 void Module::OxygenMonitor::_init()
 {

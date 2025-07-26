@@ -30,9 +30,9 @@
 #define NB_COMMANDS 7
 #define BOT_API_URL "https://api.telegram.org/bot"
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
-#define USER_ID     "GP96_testBot"
 #define MAX_USER_COUNT 10
 #define MAX_PARAMS 10
+#define BROADCAST_MAX_RETRIES 3
 
 namespace Module {
 
@@ -89,13 +89,14 @@ namespace Module {
        * @brief Possible states of the bot's internal state machine.
        */
       typedef enum BOT_STATE {
-        INIT,                   /**< Initial state. */
-        MONITOR,                /**< Monitoring state. */
-        SEND_ALERT,             /**< State to send alerts. */
-        REQUEST_LAST_MESSAGE,   /**< State to request last message. */
-        WAITING_LAST_MESSAGE,   /**< Waiting for last message. */
-        PROCESS_LAST_MESSAGE,   /**< Processing the received message. */
-        WAITING_RESPONSE,       /**< Waiting for API response. */
+        INIT,                       /**< Initial state. */
+        MONITOR,                    /**< Monitoring state. */
+        SEND_ALERT,                 /**< State to send alerts. */
+        REQUEST_LAST_MESSAGE,       /**< State to request last message. */
+        WAITING_LAST_MESSAGE,       /**< Waiting for last message. */
+        PROCESS_LAST_MESSAGE,       /**< Processing the received message. */
+        WAITING_RESPONSE,           /**< Waiting for API response. */
+        WAITING_BROADCAST_RESPONSE  /**< Waiting for API response in case of broadcast. */
       } bot_state_t;
 
       /**
@@ -131,7 +132,7 @@ namespace Module {
       UsersArray userId;                            /**< List of registered user IDs. */
       int userCount;                                /**< Number of registered users. */
       int broadcastIndex;                           /**<  */
-      bool isBroadcastInProgress;                   /**<  */
+      int broadcastRetryCount;                      /**<  */
       telegram_Message botLastMessage;              /**< Last received message. */
       std::string botResponse;                      /**< Last response from API. */
       commandFunction functionsArray[NB_COMMANDS];  /**< Commands function array. */
