@@ -17,51 +17,35 @@
 #include "wifi_com.h"
 #include <string>
 #include <type_traits>
-#include <vector>
 #include <ArduinoJson.h>
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout tBotTimeout;                   /**<  */
-static bool isTimeoutFinished;                /**<  */
+static Timeout tBotTimeout;                         /**<  */
+static bool isTimeoutFinished;                      /**<  */
 
-static Timeout alertTimeout;                  /**<  */
-static bool isAlertTimeoutFinished;           /**<  */
+static Timeout alertTimeout;                        /**<  */
+static bool isAlertTimeoutFinished;                 /**<  */
 
+static constexpr chrono::seconds alertDelay = 60s;  /**<  */
+
+/**
+* @brief 
+*/
 static void onTBotTimeoutFinishedCallback();
-static void onAlertTimeoutFinishedCallback();
 
-static constexpr chrono::seconds alertDelay = 60s;
+/**
+* @brief 
+*/
+static void onAlertTimeoutFinishedCallback();
 
 //=====[Implementations of public functions]===================================
 
 namespace Module {
 
-  TelegramBot::TelegramBot(const char *apiUrl, const char *token) 
-  : botUrl(apiUrl)
-  , botToken(token)
-  , botDelay(0)
-  {
-  }
-
   void TelegramBot::init()
   {
-    botLastUpdateId = 0;
-    // std::fill(userId.begin(), userId.end(), "");
-    userId.fill("");
-    userCount = 0;
-    broadcastIndex = 0;
-    isTimeoutFinished = false;
-    isAlertTimeoutFinished = true; //El estado inicial de esta variable DEBE ser true.
-    broadcastRetryCount = 0;
-
-    functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
-    functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
-    functionsArray[COMMAND_TANK] = &TelegramBot::_commandTank;
-    functionsArray[COMMAND_TANK_STATUS] = &TelegramBot::_commandTankStatus;
-    functionsArray[COMMAND_NEW_GAS_FLOW] = &TelegramBot::_commandNewGasFlow;
-    functionsArray[COMMAND_GAS_FLOW] =  &TelegramBot::_commandGasFlow;
-    functionsArray[COMMAND_END] = &TelegramBot::_commandEnd;
+    getInstance()._init();
   }
 
   void TelegramBot::update()
@@ -210,9 +194,28 @@ namespace Module {
       }
       break;
     }
-  }
+  } // TelegramBot::update()
 
 //=====[Implementations of private functions]===================================
+
+  void TelegramBot::_init()
+  {
+    botLastUpdateId = 0;
+    userId.fill("");
+    userCount = 0;
+    broadcastIndex = 0;
+    isTimeoutFinished = false;
+    isAlertTimeoutFinished = true; //Initial state of this variable MUST be true.
+    broadcastRetryCount = 0;
+
+    functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
+    functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
+    functionsArray[COMMAND_TANK] = &TelegramBot::_commandTank;
+    functionsArray[COMMAND_TANK_STATUS] = &TelegramBot::_commandTankStatus;
+    functionsArray[COMMAND_NEW_GAS_FLOW] = &TelegramBot::_commandNewGasFlow;
+    functionsArray[COMMAND_GAS_FLOW] =  &TelegramBot::_commandGasFlow;
+    functionsArray[COMMAND_END] = &TelegramBot::_commandEnd;
+  }
 
   /**
   * @brief 
@@ -447,7 +450,7 @@ namespace Module {
       }
 
       userCount--;
-      userId[userCount] = "";  // Limpiar el último valor válido
+      userId[userCount] = "";
       return true;
     } else {
       return false;
@@ -510,7 +513,6 @@ namespace Module {
         end = message.find(' ', start);
     }
 
-    // Agregar el último parámetro (si existe y hay espacio)
     if (start < message.length() && paramCount < MAX_PARAMS)
     {
         params[paramCount++] = message.substr(start);
@@ -558,9 +560,11 @@ namespace Module {
   {
     std::string fixedResponse = response;
 
-    // Si empieza con doble llave, eliminamos una
+    // Erase first '{'
+    // Don't know why but sometimes JSON's comes with an extra '{' at the start
+    // that it's not supposed to be there (Everything on th ESP32 side seems OK).
     if (fixedResponse[0] == '{' && fixedResponse[1] == '{') {
-        fixedResponse.erase(0, 1);  // Eliminar el primer '{'
+        fixedResponse.erase(0, 1);
     }
 
     JsonDocument doc;
@@ -572,7 +576,6 @@ namespace Module {
       return false;
     }
     
-    // Check if "ok" is true
     if (!doc["ok"])
     {
       return false;
@@ -590,12 +593,12 @@ namespace Module {
     if (botLastUpdateId == 0)
     {
       botLastUpdateId = updateId;
-      return false;  // Ignorar primer mensaje recibido siempre
+      return false;
     }
 
     if (updateId <= botLastUpdateId)
     {
-      return false; // Ignorar mensajes repetidos o viejos
+      return false;
     }
 
     botLastUpdateId = updateId;
@@ -606,7 +609,7 @@ namespace Module {
     const char* result_0_message_text = messageObj["text"];
     unsigned long long result_0_message_from_id = from["id"];
     const char* result_0_message_from_first_name = from["first_name"];
-    const char* result_0_message_from_username = !from["username"].isNull() ? from["username"] : from["id"].as<const char*>(); //TODO: Esto esta medio al pepe, ver como lo puedo cambiar.
+    const char* result_0_message_from_username = !from["username"].isNull() ? from["username"] : from["id"].as<const char*>();
 
     message->updateId = updateId;
     message->fromId = std::to_string(result_0_message_from_id);
@@ -701,17 +704,11 @@ namespace Module {
 
 } // namespace Module
 
-/**
-* @brief 
-*/
 static void onTBotTimeoutFinishedCallback()
 {
   isTimeoutFinished = true;
 }
 
-/**
-* @brief 
-*/
 static void onAlertTimeoutFinishedCallback()
 {
   isAlertTimeoutFinished = true;

@@ -19,7 +19,6 @@ namespace Module {
 
 //=====[Declaration and initialization of private global variables]============
 
-static Module::TelegramBot telegramBot(BOT_API_URL, BOT_TOKEN);
 static Timeout o2MonitorTimeout;
 static bool isTimeoutFinished;
 static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 2s;
@@ -45,7 +44,7 @@ void OxygenMonitor::update()
       isTimeoutFinished = false;
     }
     Drivers::WifiCom::getInstance().update();
-    telegramBot.update();
+    Module::TelegramBot::getInstance().update();
 }
 
 //=====[Implementations of private methods]==================================
@@ -61,7 +60,7 @@ void Module::OxygenMonitor::_init()
     printf("\nInit WifiCom\n");
     Drivers::WifiCom::init();
     printf("\nInit Telegram BOT\n");
-    telegramBot.init();
+    Module::TelegramBot::init();
     printf("\nInit TankMonitor\n");
     Module::TankMonitor::init();
 

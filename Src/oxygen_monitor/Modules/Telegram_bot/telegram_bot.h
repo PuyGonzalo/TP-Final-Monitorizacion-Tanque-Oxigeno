@@ -42,20 +42,20 @@ namespace Module {
 
       /**
       * @brief
-      * @param
-      * @param
       */
-      TelegramBot(const char *apiUrl, const char *token);
+      static TelegramBot& getInstance(){
+        static TelegramBot instance(BOT_API_URL, BOT_TOKEN);
+
+        return instance;
+      }
+      
+      TelegramBot(const TelegramBot&) = delete;
+      TelegramBot& operator=(const TelegramBot&) = delete;
 
       /**
       * @brief
       */
-      ~TelegramBot() = default;
-
-      /**
-      * @brief
-      */
-      void init();
+      static void init();
 
       /**
       * @brief
@@ -99,6 +99,15 @@ namespace Module {
         WAITING_BROADCAST_RESPONSE  /**< Waiting for API response in case of broadcast. */
       } bot_state_t;
 
+      TelegramBot(const char *apiUrl, const char *token)
+      : botUrl(apiUrl)
+      , botToken(token)
+      {};
+
+      ~TelegramBot() = default;
+
+      void _init();
+
       /**
       * @name Comands Handlers
       * Handler for telegram commands
@@ -136,7 +145,7 @@ namespace Module {
       telegram_Message botLastMessage;              /**< Last received message. */
       std::string botResponse;                      /**< Last response from API. */
       commandFunction functionsArray[NB_COMMANDS];  /**< Commands function array. */
-      Util::Delay botDelay;                         /**< Delay utility for timing. TODO: ¿Sacar?*/
+      // Util::Delay botDelay;                         /**< Delay utility for timing. TODO: ¿Sacar?*/
 
   }; //TelegramBot class
 
