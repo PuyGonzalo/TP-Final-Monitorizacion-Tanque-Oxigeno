@@ -27,7 +27,7 @@
 
 //=========================[Module Defines]=====================================
 
-#define NB_COMMANDS 7
+#define NB_COMMANDS 9
 #define BOT_API_URL "https://api.telegram.org/bot"
 #define BOT_TOKEN   "7713584244:AAGMZfNYBwRIWm1gPhduFv5bhBhdRNhkBcA"
 #define MAX_USER_COUNT 10
@@ -48,7 +48,7 @@ namespace Module {
 
         return instance;
       }
-      
+
       TelegramBot(const TelegramBot&) = delete;
       TelegramBot& operator=(const TelegramBot&) = delete;
 
@@ -114,6 +114,8 @@ namespace Module {
       * @{
       */
       std::string _commandStart(const ParametersArray &params, size_t paramCount);
+      std::string _commandSetUnit(const ParametersArray &params, size_t paramCount);
+      std::string _commandUnit(const ParametersArray &params, size_t paramCount);
       std::string _commandNewTank(const ParametersArray &params, size_t paramCount);
       std::string _commandTank(const ParametersArray &params, size_t paramCount);
       std::string _commandTankStatus(const ParametersArray &params, size_t paramCount);
@@ -145,7 +147,6 @@ namespace Module {
       telegram_Message botLastMessage;              /**< Last received message. */
       std::string botResponse;                      /**< Last response from API. */
       commandFunction functionsArray[NB_COMMANDS];  /**< Commands function array. */
-      // Util::Delay botDelay;                         /**< Delay utility for timing. TODO: ¿Sacar?*/
 
   }; //TelegramBot class
 

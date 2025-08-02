@@ -27,6 +27,30 @@ namespace Drivers {
 
   //-------------------------------------------------------------------------------
 
+  void PressureGauge::update()
+  {
+    float pressure;
+    float analog_reading = _pin.read();
+    float voltage = analog_reading * ref;
+    printf("Analog reading: %.2f V\n\r", voltage);
+    if (voltage < MIN_READING_VALUE) {
+      voltage = MIN_READING_VALUE;
+    }
+
+    if (unit == UNIT_BAR) {
+      pressure = (voltage - MIN_READING_VALUE) * (MAX_PRESS_VALUE_BAR / (MAX_READING_VALUE - MIN_READING_VALUE));
+    } else if (unit == UNIT_PSI) {
+      pressure = (voltage - MIN_READING_VALUE) * (MAX_PRESS_VALUE_PSI / (MAX_READING_VALUE - MIN_READING_VALUE));
+    } else {
+      pressure = 0;
+    }
+    
+    last_reading = pressure;
+
+  }
+
+  //-------------------------------------------------------------------------------
+
   float PressureGauge::get_last_reading()
   {
     return last_reading;
@@ -34,22 +58,19 @@ namespace Drivers {
 
   //-------------------------------------------------------------------------------
 
-  void PressureGauge::update()
+  void PressureGauge::setUnit(unit_t fUnit)
   {
-    float analog_reading = _pin.read();
-    float voltage = analog_reading * ref;
-    printf("Analog reading: %.2f V\n\r", voltage);
-    if (voltage < MIN_READING_VALUE) {
-      voltage = MIN_READING_VALUE;
-    }
-    else if (voltage > MAX_READING_VALUE ) {
-      voltage = MAX_READING_VALUE;
-    }
+    unit = fUnit;
+  }
 
-    float pressure = (voltage - MIN_READING_VALUE) * (MAX_PRESS_VALUE / (MAX_READING_VALUE - MIN_READING_VALUE));
+  bool PressureGauge::isUnitSet()
+  {
+    return (unit != UNIT_UNKNOWN);
+  }
 
-    last_reading = pressure;
-
+  PressureGauge::unit_t PressureGauge::get_unit()
+  {
+    return unit;
   }
 
 }; // namespace Drivers

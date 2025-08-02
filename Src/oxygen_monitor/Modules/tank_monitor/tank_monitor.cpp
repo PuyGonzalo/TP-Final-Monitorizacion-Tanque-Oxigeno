@@ -8,6 +8,7 @@
  *******************************************************************************/
 
 #include <cstdio>
+#include <string>
 #include "tank_monitor.h"
 
 //=====[Declaration and initialization of private global variables]==============
@@ -27,8 +28,9 @@ namespace Module {
   {
     pressure_sensor.update();
     float last_reading = pressure_sensor.get_last_reading();
-    printf("Last reading: %.2f bar\n\r", last_reading);
-    if (last_reading < PRESSURE_THRESHOLD) {
+    float threshold = pressure_sensor.get_unit() == Drivers::PressureGauge::UNIT_BAR ? PRESSURE_THRESHOLD_BAR : PRESSURE_THRESHOLD_PSI;
+    printf("Last reading: %.2f\n\r", last_reading);
+    if (last_reading < threshold) {
 
       tank_state = TANK_LEVEL_LOW;
     } else {
@@ -36,7 +38,7 @@ namespace Module {
     }
     
     // Check if sensor is disconnected:
-    if (last_reading < 0.1f) {
+    if (last_reading == 0) {
       tank_state = TANK_LEVEL_UNKNOWN;
     }
   }
@@ -62,22 +64,28 @@ namespace Module {
   float TankMonitor::getTankStatus() //TODO: Reveer el calculo del tiempo.
   {
 
-    if (!tankRegistered) return 0.0;
+    if (!tankRegistered) return -1;
+    if (!pressure_sensor.isUnitSet()) return -1;
 
+    Drivers::PressureGauge::unit_t unit = pressure_sensor.get_unit();
     pressure_sensor.update();
     float last_reading = pressure_sensor.get_last_reading();
 
-    if (tank_type == TANK_TYPE_NONE) {
-      float availabeVolume = (last_reading / TANK_NOMINAL_PRESS) * tank_capacity;
+    if (unit == Drivers::PressureGauge::UNIT_BAR && tank_type == TANK_TYPE_NONE) {
+      float count = tank_capacity > 20 ? (last_reading - BIG_TANK_RESIDUAL_BAR) : (last_reading - SMALL_TANK_RESIDUAL_BAR);
+      float availabeVolume = count * tank_capacity;
+      float time = availabeVolume / gas_flow;
+
+      return time;
+    } else if (tank_type != TANK_TYPE_NONE){
+      float factor = _getTypeFactor(unit);
+      float count = unit == Drivers::PressureGauge::UNIT_PSI ? (last_reading - TANK_RESIDUAL_PSI) : (last_reading - TANK_RESIDUAL_BAR);
+      float availabeVolume = count * factor;
       float time = availabeVolume / gas_flow;
 
       return time;
     } else {
-      float factor = _getTypeFactor();
-      float availabeVolume = (last_reading - TANK_RESERVE) * factor;
-      float time = availabeVolume / gas_flow;
-
-      return time;
+      return -1;
     }
   }
 
@@ -89,6 +97,42 @@ namespace Module {
   bool TankMonitor::isTankRegistered()
   {
     return tankRegistered;
+  }
+
+  bool TankMonitor::isUnitSet()
+  {
+    return pressure_sensor.isUnitSet();
+  }
+
+  bool TankMonitor::setPressureGaugeUnit(std::string unitStr)
+  {
+    if (unitStr == "bar" || unitStr == "BAR"){
+      pressure_sensor.setUnit(Drivers::PressureGauge::UNIT_BAR);
+      return true;
+    } else if (unitStr == "psi" || unitStr == "PSI") {
+      pressure_sensor.setUnit(Drivers::PressureGauge::UNIT_PSI);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  std::string TankMonitor::getPressureGaugeUnitStr()
+  {
+    Drivers::PressureGauge::unit_t currentUnit;
+    std::string result;
+
+    currentUnit = pressure_sensor.get_unit();
+
+    if (currentUnit == Drivers::PressureGauge::UNIT_BAR){
+      result = "BAR";
+    } else if (currentUnit == Drivers::PressureGauge::UNIT_PSI) {
+      result = "PSI";
+    }else {
+      result = "Unknown";
+    }
+
+    return result;
   }
 
   //=====[Implementations of private methods]===================================
@@ -118,6 +162,8 @@ namespace Module {
       return TANK_E;
     } else if (fTankType == TANK_M_STR || fTankType == "m") {
       return TANK_M;
+    } else if (fTankType == TANK_G_STR || fTankType == "g") {
+      return TANK_G;
     } else if (fTankType == TANK_H_STR || fTankType == "h") {
       return TANK_H;
     } 
@@ -128,16 +174,36 @@ namespace Module {
   /**
   * @brief TODO: Completar
   */
-  float TankMonitor::_getTypeFactor()
+  float TankMonitor::_getTypeFactor(Drivers::PressureGauge::unit_t unit)
   {
-    if (tank_type == TANK_D ) {
-      return TANK_D_FACTOR;
-    } else if (tank_type == TANK_E) {
-      return TANK_E_FACTOR;
-    } else if (tank_type == TANK_M) {
-      return TANK_M_FACTOR;
-    } else if (tank_type == TANK_H) {
-      return TANK_H_FACTOR;
+    if (unit == Drivers::PressureGauge::UNIT_BAR)
+    {
+      if (tank_type == TANK_D ) {
+        return TANK_D_FACTOR_BAR;
+      } else if (tank_type == TANK_E) {
+        return TANK_E_FACTOR_BAR;
+      } else if (tank_type == TANK_M) {
+        return TANK_M_FACTOR_BAR;
+      } else if (tank_type == TANK_G) {
+        return TANK_G_FACTOR_BAR;
+      } else if (tank_type == TANK_H) {
+        return TANK_H_FACTOR_BAR;
+      }
+    }
+
+    if (unit == Drivers::PressureGauge::UNIT_PSI)
+    {
+      if (tank_type == TANK_D ) {
+        return TANK_D_FACTOR_PSI;
+      } else if (tank_type == TANK_E) {
+        return TANK_E_FACTOR_PSI;
+      } else if (tank_type == TANK_M) {
+        return TANK_M_FACTOR_PSI;
+      } else if (tank_type == TANK_G) {
+        return TANK_G_FACTOR_PSI;
+      } else if (tank_type == TANK_H) {
+        return TANK_H_FACTOR_PSI;
+      }
     }
 
     return 0.0;

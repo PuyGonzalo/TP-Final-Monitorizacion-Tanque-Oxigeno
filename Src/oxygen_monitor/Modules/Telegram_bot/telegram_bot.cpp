@@ -129,7 +129,7 @@ namespace Module {
         std::string command = params[0];
 
         if( (_isUserIdValid(botLastMessage.fromId)) || (command.compare(COMMAND_START_STR) == 0 )) {
-          command_t command_nb = _findCommand(command); //Agregar verificacion de comando
+          command_t command_nb = _findCommand(command);
           if (command_nb != ERROR_INVALID_COMMAND)
           {
             printf("paramCount: %d\n\r", paramCount);
@@ -209,6 +209,8 @@ namespace Module {
     broadcastRetryCount = 0;
 
     functionsArray[COMMAND_START] = &TelegramBot::_commandStart;
+    functionsArray[COMMAND_SET_UNIT] = &TelegramBot::_commandSetUnit;
+    functionsArray[COMMAND_UNIT] = &TelegramBot::_commandUnit;
     functionsArray[COMMAND_NEW_TANK] = &TelegramBot::_commandNewTank;
     functionsArray[COMMAND_TANK] = &TelegramBot::_commandTank;
     functionsArray[COMMAND_TANK_STATUS] = &TelegramBot::_commandTankStatus;
@@ -245,6 +247,52 @@ namespace Module {
 
   /**
   * @brief 
+  * @param
+  * @param 
+  * @return
+  */
+  std::string TelegramBot::_commandSetUnit(const ParametersArray &params, size_t paramCount)
+  {
+    if (paramCount == 2) {
+      std::string unit = params[1];
+
+      if(Module::TankMonitor::getInstance().setPressureGaugeUnit(unit))
+      {
+        return SET_UNIT_COMMAND_RESPONSE_STR;
+      } 
+
+    }
+
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
+  }
+
+  /**
+  * @brief 
+  * @param
+  * @param 
+  * @return
+  */
+  std::string TelegramBot::_commandUnit(const ParametersArray &params, size_t paramCount)
+  {
+    if (paramCount == 1) {
+      std::string result;
+      
+      std::string unit = Module::TankMonitor::getInstance().getPressureGaugeUnitStr();
+      if (unit != "Unknown")
+      {
+        result = _formatString(UNIT_COMMAND_RESPONSE_STR, unit.c_str());
+      } else {
+        result = _formatString(UNIT_COMMAND_RESPONSE_STR, "unit not set");
+      }
+
+      return result;
+    }
+
+    return _formatString(ERROR_INVALID_PARAMETERS_STR, COMMAND_START_STR);
+  }  
+
+  /**
+  * @brief 
   * @param 
   * @param 
   * @return
@@ -274,8 +322,15 @@ namespace Module {
       std::string numTankCapacity = params[2];
       std::string numTankGasFlow = params[4];
       
+      if (!Module::TankMonitor::getInstance().isUnitSet())
+      {
+        return TANK_COMMAND_NO_UNIT_RESPONSE;
+      }
+
+      std::string unit = Module::TankMonitor::getInstance().getPressureGaugeUnitStr();
+
       if (firstParam == "type") {
-        
+
         if (_isStringNumeric(numTankGasFlow)) {
           bool isTypeValid = Module::TankMonitor::getInstance().isTankTypeValid(tankType);
 
@@ -288,8 +343,10 @@ namespace Module {
         }
 
       } else if (firstParam == "vol") {
+        if (unit != "BAR") return COMMAND_TANK_UNIT_ERROR;
+
         if (_isStringNumeric(numTankGasFlow) && _isStringNumeric(numTankCapacity)) {
-          int tankGasFlow = std::stoi(numTankGasFlow);
+          int tankGasFlow = std::stof(numTankGasFlow);
           int tankCapacity = std::stoi(numTankCapacity);
           tankType = "None";
           Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
@@ -325,7 +382,7 @@ namespace Module {
         } else if (time < 60.0){
           int timeLeft = (int) time;
           return _formatString(STATUS_COMMAND_RESPONSE_MINUTES_STR, timeLeft);
-        } else {
+        } else if (time == -1){
           return ERROR_STATUS_COMMAND_STR;
         }
 
@@ -465,7 +522,7 @@ namespace Module {
   */
   bool TelegramBot::_isUserIdValid(std::string fUserId)
   {
-    std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.begin() + userCount, fUserId);
+    UsersArray::iterator it = std::find(userId.begin(), userId.begin() + userCount, fUserId);
 
     if (it != userId.begin() + userCount)
     {
@@ -482,7 +539,7 @@ namespace Module {
   */
   std::string TelegramBot::_getUserId(std::string user) //TODO: Esta funcion esta al pedo?
   {
-    std::array<std::string, MAX_USER_COUNT>::iterator it = std::find(userId.begin(), userId.begin() + userCount, user);
+    UsersArray::iterator it = std::find(userId.begin(), userId.begin() + userCount, user);
 
     if (it != userId.begin() + userCount)
     {
@@ -630,6 +687,10 @@ namespace Module {
   {
     if (command == COMMAND_START_STR) {
       return COMMAND_START;
+    } else if (command == COMMAND_UNIT_STR) {
+      return COMMAND_UNIT;
+    } else if (command == COMMAND_SET_UNIT_STR) {
+      return COMMAND_SET_UNIT;
     } else if (command == COMMAND_NEW_TANK_STR) {
       return COMMAND_NEW_TANK;
     } else if (command == COMMAND_TANK_STR) {

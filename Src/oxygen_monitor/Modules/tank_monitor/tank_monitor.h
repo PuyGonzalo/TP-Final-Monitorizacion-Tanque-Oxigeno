@@ -14,13 +14,25 @@
 #include "pressure_gauge.h"
 
 //=========================[Module Defines]=====================================
-#define PRESSURE_THRESHOLD 34.0f    // [bar]
-#define TANK_RESERVE 34.5f          // [bar]
-#define TANK_NOMINAL_PRESS 138.0f   // [bar]   Typical nominal press value for medical tanks.
-#define TANK_D_FACTOR 2.3f          // [L/bar]
-#define TANK_E_FACTOR 4.1f          // [L/bar]
-#define TANK_M_FACTOR 22.6f         // [L/bar]
-#define TANK_H_FACTOR 45.5f         // [L/bar]
+#define PRESSURE_THRESHOLD_BAR 34.0f    // [bar]
+#define SMALL_TANK_RESIDUAL_BAR 10      // [bar]
+#define BIG_TANK_RESIDUAL_BAR 20        // [bar]
+#define TANK_RESIDUAL_BAR 13.8f         // [bar]
+
+#define TANK_D_FACTOR_BAR 2.3f          // [L/bar]
+#define TANK_E_FACTOR_BAR 3.5f          // [L/bar]
+#define TANK_M_FACTOR_BAR 17.4f         // [L/bar]
+#define TANK_G_FACTOR_BAR 27.0f         // [L/bar]
+#define TANK_H_FACTOR_BAR 35.0f         // [L/bar]
+
+#define TANK_RESIDUAL_PSI 200           // [psi]
+#define PRESSURE_THRESHOLD_PSI 500.0f   // [psi]
+
+#define TANK_D_FACTOR_PSI 0.16f         // [L/psi]
+#define TANK_E_FACTOR_PSI 0.28f         // [L/psi]
+#define TANK_M_FACTOR_PSI 1.56f         // [L/psi]
+#define TANK_G_FACTOR_PSI 2.41f         // [L/psi]
+#define TANK_H_FACTOR_PSI 3.14f         // [L/psi]
 
 /**
  * @brief String for tank type D.
@@ -36,6 +48,11 @@ const char TANK_E_STR[]              = "E";
  * @brief String for tank type M.
  */
 const char TANK_M_STR[]              = "M";
+
+/**
+ * @brief String for tank type G.
+ */
+const char TANK_G_STR[]              = "G";
 
 /**
  * @brief String for tank type H.
@@ -62,8 +79,9 @@ typedef enum tank_type {
   TANK_D = 0,
   TANK_E = 1,
   TANK_M = 2,
-  TANK_H = 3,
-  TANK_TYPE_NONE = 4
+  TANK_G = 3,
+  TANK_H = 4,
+  TANK_TYPE_NONE = 5
 } tank_type_t;
 
 
@@ -116,16 +134,38 @@ class TankMonitor {
 
   /**
   * @brief TODO: Completar
-  * @return 
+  * @retval true
+  * @retval false 
   */
   bool isTankTypeValid(const std::string fTankType);
 
   /**
   * @brief TODO: Completar
-  * @return 
+  * @retval true
+  * @retval false 
   */
   bool isTankRegistered();
 
+  /**
+  * @brief TODO: Completar
+  * @retval true
+  * @retval false 
+  */
+  bool isUnitSet();
+
+  /**
+  * @brief TODO: Completar
+  * @param 
+  * @retval true
+  * @retval false 
+  */
+  bool setPressureGaugeUnit(std::string unitStr);
+
+  /**
+  * @brief TODO: Completar
+  * @return
+  */
+  std::string getPressureGaugeUnitStr();
 
  private:
   
@@ -134,7 +174,7 @@ class TankMonitor {
 
   void _init();
   tank_type_t _findType(const std::string fTankType);
-  float _getTypeFactor();
+  float _getTypeFactor(Drivers::PressureGauge::unit_t unit);
 
   tank_state_t tank_state;  /**< Current tank state. */
   tank_type_t tank_type;    /**< Current tank type. */

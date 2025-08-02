@@ -17,6 +17,8 @@
  */
 typedef enum COMMANDS {
     COMMAND_START,                  /**< Command to start bot interaction and register new user(/start). */
+    COMMAND_SET_UNIT,               /**< Command to register a new unit (/setunit). */
+    COMMAND_UNIT,                   /**< Command to set or check unit (/unit). */
     COMMAND_NEW_TANK,               /**< Command to register a new tank (/newTank). */
     COMMAND_TANK,                   /**< Command to set new tank information (/tank). */
     COMMAND_TANK_STATUS,            /**< Command to query the tank's current status (/status). */
@@ -32,6 +34,16 @@ typedef enum COMMANDS {
 const char COMMAND_START_STR[]              = "/start";
 
 /**
+ * @brief Command string for starting the bot session.
+ */
+const char COMMAND_SET_UNIT_STR[]           = "/setunit";
+
+/**
+ * @brief Command string for starting the bot session.
+ */
+const char COMMAND_UNIT_STR[]               = "/unit";
+
+/**
  * @brief Command string for registering a new tank.
  */
 const char COMMAND_NEW_TANK_STR[]           = "/newtank";
@@ -39,7 +51,7 @@ const char COMMAND_NEW_TANK_STR[]           = "/newtank";
 /**
  * @brief Command string for seting up a new tank.
  */
-const char COMMAND_TANK_STR[]           = "/tank";
+const char COMMAND_TANK_STR[]               = "/tank";
 
 /**
  * @brief Command string for checking tank status.
@@ -54,23 +66,40 @@ const char COMMAND_NEW_GAS_FLOW_STR[]       = "/newgf";
 /**
  * @brief Command string for setting the new gas flow.
  */
-const char COMMAND_GAS_FLOW_STR[]       = "/gasflow";
+const char COMMAND_GAS_FLOW_STR[]           = "/gasflow";
 
 /**
  * @brief Command string for ending the bot session.
  */
-const char COMMAND_END_STR[]       = "/end";
+const char COMMAND_END_STR[]                = "/end";
 
 /**
- * @brief Command string for ending the bot session.
+ * @brief 
  */
 const char NEW_TANK_COMMAND_RESPONSE_STR[]                        = "To register a new tank please use '/tank' command as follows:\
                                                                   \n\n/tank type <tank type> gflow <gas flow [L/min]>\
                                                                   \n\nOr if you don't know the tank type:\
+                                                                  \n(Warning: this will only work if you seted the measure unit to bar)\
                                                                   \n\n/tank vol <tank volume [L]> gflow <gas flow [L/min]>\
                                                                   \n\nExamples:\
-                                                                  \n/tank type H gflow 2\
-                                                                  \n/tank vol 30 gflow 3";
+                                                                  \n/tank type H gflow 1.25\
+                                                                  \n/tank vol 50 gflow 2";
+
+/**
+ * @brief 
+ */
+const char UNIT_COMMAND_RESPONSE_STR[]                            = "The current unit is: %s\
+                                                                  \n\nTo set the unit please use '/setunit' command as follows:\
+                                                                  \n\n/setunit <unit>\
+                                                                  \n\nExamples:\
+                                                                  \n/unit PSI\
+                                                                  \n/unit BAR";
+
+/**
+ * @brief 
+ */
+const char SET_UNIT_COMMAND_RESPONSE_STR[]                        = "[Success!]\
+                                                                    \n\nCorrectly set new unit.";
 
 /**
  * @brief 
@@ -108,6 +137,9 @@ const char STATUS_COMMAND_RESPONSE_HOURS_STR[]                    = "[Tank Statu
 const char STATUS_COMMAND_RESPONSE_MINUTES_STR[]                  = "[Tank Status]\
                                                                     \nThe tank will go low in approximately %d min.";
 
+const char TANK_COMMAND_NO_UNIT_RESPONSE[]                        = "[Warning!]\
+                                                                    \n\nNo measure unit is set for the system.\
+                                                                    \nPlease use /unit command to know how to set the measure unit.";
 
 /**
  * @brief 
@@ -124,6 +156,12 @@ const char TANK_COMMAND_VOL_RESPONSE_STR[]                        = "[Success!]\
                                                                     \nNew Oxygen Tank registered:\
                                                                     \nCapacity: %d [L]\
                                                                     \nGas Flow: %d [L/min]";
+
+/**
+ * @brief 
+ */
+const char COMMAND_TANK_UNIT_ERROR[]                              = "[ERROR]\
+                                                                    \n\nParameters used are not valid with the current unit.";
 
 /**
  * @brief 
