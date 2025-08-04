@@ -128,9 +128,11 @@ class TankMonitor {
 
   /**
    * @brief TODO: Completar
+   * @param lastReading
+   * @param currentGasFlow
    * @return
    */
-  float getTankStatus();
+  float getTankStatus(float &lastReading, float &currentGasFlow);
 
   /**
   * @brief TODO: Completar

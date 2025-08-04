@@ -129,13 +129,17 @@ const char GAS_FLOW_COMMAND_RESPONSE_STR[]                        = "[Success!]\
  * @brief 
  */
 const char STATUS_COMMAND_RESPONSE_HOURS_STR[]                    = "[Tank Status]\
-                                                                    \nThe tank will go low in approximately %d hs. and %d min.";
+                                                                    \nCurrent preassure: %.2f [%s]\
+                                                                    \nCurrent Gas Flow: %.2f [L/min]\
+                                                                    \n\nThe tank will go low in approximately %d hs. and %d min.";
 
 /**
  * @brief 
  */
 const char STATUS_COMMAND_RESPONSE_MINUTES_STR[]                  = "[Tank Status]\
-                                                                    \nThe tank will go low in approximately %d min.";
+                                                                    \nCurrent preassure: %.2f [%s]\
+                                                                    \nCurrent Gas Flow: %.2f [L/min]\
+                                                                    \n\nThe tank will go low in approximately %d min.";
 
 const char TANK_COMMAND_NO_UNIT_RESPONSE[]                        = "[Warning!]\
                                                                     \n\nNo measure unit is set for the system.\

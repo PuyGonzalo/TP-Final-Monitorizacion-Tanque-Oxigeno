@@ -372,20 +372,23 @@ namespace Module {
   {
     if (paramCount == 1) {
       if (Module::TankMonitor::getInstance().isTankRegistered()) {
-        float time = Module::TankMonitor::getInstance().getTankStatus();
-
-        if (time > 60.0) {
+        float pressure;
+        float gasFlow;
+        float time = Module::TankMonitor::getInstance().getTankStatus(pressure, gasFlow);
+        std::string unit = Module::TankMonitor::getInstance().getPressureGaugeUnitStr();
+        
+        if (time == -1){
+          return ERROR_STATUS_COMMAND_STR;
+        } else if (time >= 60.0) {
           int hours = (int) (time / 60.0);
           float minutesLeft = time - (hours * 60.0);
           int minutes = (int) (minutesLeft + 0.5);
-          return _formatString(STATUS_COMMAND_RESPONSE_HOURS_STR, hours, minutes);
+          return _formatString(STATUS_COMMAND_RESPONSE_HOURS_STR, pressure, unit.c_str(), gasFlow, hours, minutes);
         } else if (time < 60.0){
           int timeLeft = (int) time;
-          return _formatString(STATUS_COMMAND_RESPONSE_MINUTES_STR, timeLeft);
-        } else if (time == -1){
-          return ERROR_STATUS_COMMAND_STR;
+          return _formatString(STATUS_COMMAND_RESPONSE_MINUTES_STR, pressure, unit.c_str(), gasFlow, timeLeft);
         }
-
+        
       } else {
         return _formatString(ERROR_NO_TANK_STR);
       }

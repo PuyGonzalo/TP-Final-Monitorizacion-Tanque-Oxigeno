@@ -61,25 +61,26 @@ namespace Module {
     return tank_state;
   }
 
-  float TankMonitor::getTankStatus() //TODO: Reveer el calculo del tiempo.
+  float TankMonitor::getTankStatus(float &lastReading, float &currentGasFlow)
   {
-
     if (!tankRegistered) return -1;
+    if (gas_flow == 0) return -1;
     if (!pressure_sensor.isUnitSet()) return -1;
 
     Drivers::PressureGauge::unit_t unit = pressure_sensor.get_unit();
     pressure_sensor.update();
-    float last_reading = pressure_sensor.get_last_reading();
+    lastReading = pressure_sensor.get_last_reading();
+    currentGasFlow = gas_flow;
 
     if (unit == Drivers::PressureGauge::UNIT_BAR && tank_type == TANK_TYPE_NONE) {
-      float count = tank_capacity > 20 ? (last_reading - BIG_TANK_RESIDUAL_BAR) : (last_reading - SMALL_TANK_RESIDUAL_BAR);
+      float count = tank_capacity > 20 ? (lastReading - BIG_TANK_RESIDUAL_BAR) : (lastReading - SMALL_TANK_RESIDUAL_BAR);
       float availabeVolume = count * tank_capacity;
       float time = availabeVolume / gas_flow;
 
       return time;
     } else if (tank_type != TANK_TYPE_NONE){
       float factor = _getTypeFactor(unit);
-      float count = unit == Drivers::PressureGauge::UNIT_PSI ? (last_reading - TANK_RESIDUAL_PSI) : (last_reading - TANK_RESIDUAL_BAR);
+      float count = unit == Drivers::PressureGauge::UNIT_PSI ? (lastReading - TANK_RESIDUAL_PSI) : (lastReading - TANK_RESIDUAL_BAR);
       float availabeVolume = count * factor;
       float time = availabeVolume / gas_flow;
 
