@@ -29,7 +29,7 @@ namespace Module {
     pressure_sensor.update();
     float last_reading = pressure_sensor.get_last_reading();
     float threshold = pressure_sensor.get_unit() == Drivers::PressureGauge::UNIT_BAR ? PRESSURE_THRESHOLD_BAR : PRESSURE_THRESHOLD_PSI;
-    printf("Last reading: %.2f\n\r", last_reading);
+    printf("TankMonitor - Last reading: [%.2f]\n\r", last_reading);
     if (last_reading < threshold) {
 
       tank_state = TANK_LEVEL_LOW;

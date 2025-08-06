@@ -126,12 +126,12 @@ namespace Module {
         size_t paramCount;
         std::array<std::string, MAX_PARAMS> params = _parseMessage(botLastMessage.message, paramCount);
         std::string command = params[0];
-
+        
         if( (_isUserIdValid(botLastMessage.fromId)) || (command.compare(COMMAND_START_STR) == 0 )) {
           command_t command_nb = _findCommand(command);
+          printf("TelegramBot - Message received: [%s] from %s\r\n", botLastMessage.message.c_str(), botLastMessage.fromName.c_str());
           if (command_nb != ERROR_INVALID_COMMAND)
           {
-            printf("paramCount: %d\n\r", paramCount);
             messegeToSend = (this->*functionsArray[command_nb])(params, paramCount);
           }else {
             messegeToSend = _formatString(ERROR_INVALID_COMMAND_STR, command.c_str());
@@ -580,10 +580,10 @@ namespace Module {
     }
 
     //For Debug:
-    for (size_t i = 0; i < paramCount; ++i)
-    {
-        printf("params[%zu] = %s\n", i, params[i].c_str());
-    }
+    // for (size_t i = 0; i < paramCount; ++i)
+    // {
+    //     printf("params[%zu] = %s\n", i, params[i].c_str());
+    // }
 
     return params;
   }
