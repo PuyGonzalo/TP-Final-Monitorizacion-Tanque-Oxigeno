@@ -33,7 +33,7 @@ namespace Drivers {
     float pressure;
     float analog_reading = _pin.read();
     float voltage = analog_reading * ref;
-
+    printf("PressureGauge - Analog read: [%.2f]\n\r", voltage);
     if (voltage < MIN_READING_VALUE) {
       voltage = MIN_READING_VALUE;
     }
