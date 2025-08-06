@@ -83,9 +83,10 @@ namespace Drivers {
       case CMD_CONNECT_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
+        if (isResponseCompleted ) printf("wifiResponse: %s\n\r",wifiResponse.c_str());
         if( wifiComDelay.HasFinished() || (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0)) ) {
           wifiState = CMD_ACCESSPOINT_SEND;
-          wifiComDelay.Start(DELAY_2_SECONDS);
+          wifiComDelay.Start(DELAY_5_SECONDS);
         } else if (isResponseCompleted && (wifiResponse.compare(RESULT_OK) == 0)) {
           wifiState = IDLE;
         }

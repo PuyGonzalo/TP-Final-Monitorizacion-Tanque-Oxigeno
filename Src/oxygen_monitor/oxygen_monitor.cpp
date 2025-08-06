@@ -21,7 +21,7 @@ namespace Module {
 
 static Timeout o2MonitorTimeout;
 static bool isTimeoutFinished;
-static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 2s;
+static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 120s;
 
 //=====[Implementations of public methods]======================================
 

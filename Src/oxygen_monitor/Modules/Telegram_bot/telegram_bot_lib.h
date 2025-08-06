@@ -92,8 +92,8 @@ const char UNIT_COMMAND_RESPONSE_STR[]                            = "The current
                                                                   \n\nTo set the unit please use '/setunit' command as follows:\
                                                                   \n\n/setunit <unit>\
                                                                   \n\nExamples:\
-                                                                  \n/unit PSI\
-                                                                  \n/unit BAR";
+                                                                  \n/setunit PSI\
+                                                                  \n/setunit BAR";
 
 /**
  * @brief 
@@ -109,7 +109,9 @@ const char START_COMMAND_USER_REGISTERED_RESPONSE_STR[]           = "User regist
 /**
  * @brief 
  */
-const char START_COMMAND_USER_ALREADY_REGISTERED_RESPONSE_STR[]   = "User '%s' is already registered!";
+const char START_COMMAND_USER_REGISTER_FAIL_RESPONSE_STR[]        = "[ERROR]\
+                                                                    \nUser '%s' is already registered!\
+                                                                    \nor user limit is reached.";
 
 /**
  * @brief 
@@ -117,13 +119,13 @@ const char START_COMMAND_USER_ALREADY_REGISTERED_RESPONSE_STR[]   = "User '%s' i
 const char NEW_GAS_FLOW_COMMAND_RESPONSE_STR[]                    = "To set a new gas flow value for the current tank please use '/gasflow' command as follows:\
                                                                     \n\n/gasflow <gas flow [L/min]>\
                                                                     \n\nExample:\
-                                                                    \n/gasflow 2";
+                                                                    \n/gasflow 1.25";
 
 /**
  * @brief 
  */
 const char GAS_FLOW_COMMAND_RESPONSE_STR[]                        = "[Success!]\
-                                                                    \nNew gas flow seted up with the value: %d [L/min]";
+                                                                    \nNew gas flow seted up with the value: %.2f [L/min]";
 
 /**
  * @brief 
@@ -151,7 +153,7 @@ const char TANK_COMMAND_NO_UNIT_RESPONSE[]                        = "[Warning!]\
 const char TANK_COMMAND_TYPE_RESPONSE_STR[]                       = "[Success!]\
                                                                     \nNew Oxygen Tank registered:\
                                                                     \nType: %s\
-                                                                    \nGas Flow: %d [L/min].\n";
+                                                                    \nGas Flow: %.2f [L/min].\n";
 
 /**
  * @brief 
@@ -159,7 +161,7 @@ const char TANK_COMMAND_TYPE_RESPONSE_STR[]                       = "[Success!]\
 const char TANK_COMMAND_VOL_RESPONSE_STR[]                        = "[Success!]\
                                                                     \nNew Oxygen Tank registered:\
                                                                     \nCapacity: %d [L]\
-                                                                    \nGas Flow: %d [L/min]";
+                                                                    \nGas Flow: %.2f [L/min]";
 
 /**
  * @brief 
@@ -195,7 +197,7 @@ const char ERROR_INVALID_PARAMETERS_STR[]                         = "[ERROR]\nIn
 /**
  * @brief Error message for unregistered tank.
  */
-const char ERROR_NO_TANK_STR[]                                    = "[Error]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
+const char ERROR_NO_TANK_STR[]                                    = "[ERROR]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
 
 /**
  * @brief 

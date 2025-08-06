@@ -64,7 +64,6 @@ namespace Module {
 
       case MONITOR:
       {
-        printf("\n\r[DEBUG] Tank State: %d\n\r", Module::TankMonitor::getInstance().getTankState());
         if ( isAlertTimeoutFinished && (Module::TankMonitor::getInstance().getTankState() == TANK_LEVEL_LOW) ) {
 
           isAlertTimeoutFinished = false;
@@ -237,7 +236,7 @@ namespace Module {
         // Debug:
         for (int i = 0; i < userCount; ++i) { printf("Success! users ID:[ %s ]\r\n", userId[i].c_str()); }
       } else {
-        result = _formatString(START_COMMAND_USER_ALREADY_REGISTERED_RESPONSE_STR, botLastMessage.fromName.c_str());
+        result = _formatString(START_COMMAND_USER_REGISTER_FAIL_RESPONSE_STR, botLastMessage.fromName.c_str());
       }
       return result;
     }
@@ -321,6 +320,8 @@ namespace Module {
       std::string tankType = params[2];
       std::string numTankCapacity = params[2];
       std::string numTankGasFlow = params[4];
+
+      printf("gflow param: %s\r\n",params[4].c_str());
       
       if (!Module::TankMonitor::getInstance().isUnitSet())
       {
@@ -346,7 +347,7 @@ namespace Module {
         if (unit != "BAR") return COMMAND_TANK_UNIT_ERROR;
 
         if (_isStringNumeric(numTankGasFlow) && _isStringNumeric(numTankCapacity)) {
-          int tankGasFlow = std::stof(numTankGasFlow);
+          float tankGasFlow = std::stof(numTankGasFlow);
           int tankCapacity = std::stoi(numTankCapacity);
           tankType = "None";
           Module::TankMonitor::getInstance().setNewTank(tankType, tankCapacity, tankGasFlow);
@@ -388,9 +389,9 @@ namespace Module {
           int timeLeft = (int) time;
           return _formatString(STATUS_COMMAND_RESPONSE_MINUTES_STR, pressure, unit.c_str(), gasFlow, timeLeft);
         }
-        
+
       } else {
-        return _formatString(ERROR_NO_TANK_STR);
+        return ERROR_NO_TANK_STR;
       }
       
     } else {

@@ -23,6 +23,7 @@ namespace Drivers {
   {
     last_reading = 0.0;
     ref = 3.3f;
+    unit = UNIT_UNKNOWN;
   }
 
   //-------------------------------------------------------------------------------
@@ -32,7 +33,7 @@ namespace Drivers {
     float pressure;
     float analog_reading = _pin.read();
     float voltage = analog_reading * ref;
-    printf("Analog reading: %.2f V\n\r", voltage);
+
     if (voltage < MIN_READING_VALUE) {
       voltage = MIN_READING_VALUE;
     }

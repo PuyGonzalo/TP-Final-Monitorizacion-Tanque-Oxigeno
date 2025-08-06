@@ -12,6 +12,7 @@
 
 #define DELAY_5_MINUTES         300000
 #define DELAY_10_SECONDS        10000
+#define DELAY_15_SECONDS        15000
 #define DELAY_5_SECONDS         5000
 #define DELAY_4_SECONDS         4000
 #define DELAY_3_SECONDS         3000
