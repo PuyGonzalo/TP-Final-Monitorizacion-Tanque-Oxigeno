@@ -4,5 +4,6 @@ projectfiles
 *.py*
 mbed-os
 BUILD
-Doc
+Doc/html
+Doc/latex
 arduinojson
