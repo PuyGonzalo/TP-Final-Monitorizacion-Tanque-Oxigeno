@@ -52,7 +52,6 @@ namespace Module {
       ~OxygenMonitor() = default;
       void _init();
       static void onO2MonitorTimeoutFinishedCallback(); 
-      // Util::Delay mDelay;
   };
 
 } // namespace Subsystems
