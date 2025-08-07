@@ -7,26 +7,21 @@
 #include "mbed.h" 
 #include "pressure_gauge.h"
 
+//====================[Implementations of public methods]========================
 
 namespace Drivers {
-
-  //====================[Implementations of public methods]========================
-
+  
   PressureGauge::PressureGauge(const PinName pin)
     : _pin(pin)
   {
   }
 
-  //-------------------------------------------------------------------------------
-
   void PressureGauge::init()
   {
-    last_reading = 0.0;
+    lastReading = 0.0;
     ref = 3.3f;
     unit = UNIT_UNKNOWN;
   }
-
-  //-------------------------------------------------------------------------------
 
   void PressureGauge::update()
   {
@@ -46,18 +41,14 @@ namespace Drivers {
       pressure = 0;
     }
     
-    last_reading = pressure;
+    lastReading = pressure;
 
   }
-
-  //-------------------------------------------------------------------------------
 
   float PressureGauge::get_last_reading()
   {
-    return last_reading;
+    return lastReading;
   }
-
-  //-------------------------------------------------------------------------------
 
   void PressureGauge::setUnit(unit_t fUnit)
   {

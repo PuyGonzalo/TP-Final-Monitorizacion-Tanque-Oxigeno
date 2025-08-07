@@ -14,6 +14,8 @@
 #include <cstring>
 #include <string>
 
+//=====[Implementations of public functions]===================================
+
 namespace Drivers {
 
   void WifiCom::init()
@@ -83,44 +85,12 @@ namespace Drivers {
       case CMD_CONNECT_WAIT_RESPONSE:
       {
         const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if (isResponseCompleted ) printf("wifiResponse: %s\n\r",wifiResponse.c_str());
         if( wifiComDelay.HasFinished() || (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0)) ) {
-          wifiState = CMD_ACCESSPOINT_SEND;
-          wifiComDelay.Start(DELAY_5_SECONDS);
+          printf("WifiCom - Conection: [ERROR]\n\r");
+          wifiState = INIT;
         } else if (isResponseCompleted && (wifiResponse.compare(RESULT_OK) == 0)) {
+          printf("WifiCom - Conection: [OK]\n\r");
           wifiState = IDLE;
-        }
-      }
-      break;
-
-      case CMD_ACCESSPOINT_SEND:
-      {
-        if(wifiComDelay.HasFinished()) {
-          wifiResponse.clear();
-          esp32Command = COMMAND_ACCESSPOINT_STR;
-          esp32Command += STOP_CHAR;
-          _sendCommand(esp32Command.c_str());
-          wifiState = CMD_ACCESSPOINT_WAIT_RESPONSE;
-        }
-
-      }
-      break;
-
-      case CMD_ACCESSPOINT_WAIT_RESPONSE:
-      {
-        const bool isResponseCompleted = _isResponseCompleted(&wifiResponse);
-        if (isResponseCompleted && (wifiResponse.compare(RESULT_ERROR) == 0)) {
-          wifiState = CMD_ACCESSPOINT_SEND;
-        } else if (isResponseCompleted) {
-          int paramIndex = wifiResponse.find(PARAM_SEPARATOR_CHAR);
-          if (paramIndex != std::string::npos) {
-            wifiSsid = wifiResponse.substr(0, paramIndex);
-            wifiPassword = wifiResponse.substr(paramIndex + 1, wifiResponse.length());
-            wifiState = CMD_CONNECT_SEND;
-            wifiComDelay.Start(DELAY_2_SECONDS);
-          }
-        } else {
-          wifiState = CMD_ACCESSPOINT_SEND;
         }
       }
       break;
@@ -261,14 +231,24 @@ namespace Drivers {
     return false;
   }
 
-  // PRIVADOO
+//=====[Implementations of private functions]===================================
 
+ /**
+  * @brief Constructs the WifiCom object with specified UART pins and baud rate.
+  * 
+  * @param txPin TX pin for serial communication.
+  * @param rxPin RX pin for serial communication.
+  * @param baudRate Baud rate for UART.
+  */
   WifiCom::WifiCom(PinName txPin, PinName rxPin, const int baudRate)
   : wifiSerial(txPin, rxPin, baudRate),
   wifiComDelay(0)
   {}
 
-    void WifiCom::_init()
+ /**
+  * @brief Internal initialization routine.
+  */
+  void WifiCom::_init()
   {
     
     wifiState = INIT;
@@ -277,6 +257,11 @@ namespace Drivers {
     wifiSerial.enable_output(true);
   }
 
+ /**
+  * @brief Sends a command to the WiFi module.
+  * 
+  * @param command Null-terminated C string containing the command.
+  */
   void WifiCom::_sendCommand(const char* command)
   {
     wifiSerial.enable_output(true);
@@ -284,6 +269,12 @@ namespace Drivers {
     wifiSerial.enable_output(false);
   }
 
+ /**
+  * @brief Checks if a response from the module is complete.
+  * 
+  * @param response Pointer to store the raw response string.
+  * @return true if response is completed (e.g., "OK" or "ERROR" received).
+  */
   bool WifiCom::_isResponseCompleted(std::string* response)
   {
     char receivedChar;
@@ -299,6 +290,12 @@ namespace Drivers {
     return false;
   }
 
+  /**
+  * @brief Reads a single character from the UART interface.
+  * 
+  * @param receivedChar Pointer to store received character.
+  * @return true if a character was successfully read; false otherwise.
+  */
   bool WifiCom::_readCom(char* receivedChar)
   {
     char receivedCharLocal = '\0';

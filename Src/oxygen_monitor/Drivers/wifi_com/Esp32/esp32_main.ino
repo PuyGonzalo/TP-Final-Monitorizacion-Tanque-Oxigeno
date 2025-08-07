@@ -4,7 +4,6 @@
 #include <map>
 #include <vector>
 #include <WiFi.h>
-#include <WebServer.h>
 #include <ArduinoJson.h>
 
 #include "commands.h"
@@ -18,19 +17,6 @@
     Serial.printf(format "\r\n", ##__VA_ARGS__)
 
 
-const char* O2MonitorHtml = R"rawliteral(
-<html>
-  <body>
-    <h1>WiFi Setup</h1>
-    <form action="/connect" method="GET">
-      SSID: <input type="text" name="ssid_string"><br>
-      Password: <input type="password" name="pwd_string"><br>
-      <input type="submit" value="Connect">
-    </form>
-  </body>
-</html>
-)rawliteral";
-
 // Map of the possible commands and their associated function
 using CommandFunction = std::function<String(const std::array<String, MAX_PARAMS>&, size_t)>;
 std::map<String, CommandFunction> commandsMap;
@@ -40,7 +26,6 @@ String CommandConnectToWiFi(const std::array<String, MAX_PARAMS>& params, size_t
 String CommandPostToServer(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
 String CommandGet(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
 String CommandStatus(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
-String CommandAccessPoint(const std::array<String, MAX_PARAMS>& params, size_t paramCount);
 
 std::array<String, MAX_PARAMS> _ParseParameters(const String &input, size_t &paramCount);
 bool _IsConnected();
@@ -57,7 +42,6 @@ void setup()
     commandsMap[COMMAND_POST_STR]           = CommandPostToServer;
     commandsMap[COMMAND_GET_STR]            = CommandGet;
     commandsMap[COMMAND_STATUS_STR]         = CommandStatus;
-    commandsMap[COMMAND_ACCESSPOINT_STR]    = CommandAccessPoint;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -236,99 +220,6 @@ String CommandStatus(const std::array<String, MAX_PARAMS>& params, size_t paramC
         DEBUG_PRINTLN("CommandStatus - Incorrect amount of parameters [%d]", (params.size() - 1));
         return RESULT_ERROR;
     }
-}
-
-// ---------------------------------------------------------------------------------------
-String CommandAccessPoint(const std::array<String, MAX_PARAMS>& params, size_t paramCount)
-{
-    static bool formSubmitted = false;
-    static String network = "";
-    static String password = "";
-
-    if (paramCount == 1) 
-    {
-        WiFi.disconnect(true);  // erase old config
-        delay(100);
-        WiFi.mode(WIFI_AP);
-        delay(100);  // small delay helps settle the mode
-        WiFi.softAP(apSsid, apPassword);
-
-        WiFiServer server(80);
-        server.begin();
-
-        DEBUG_PRINTLN("Access Point configured. Connect to WiFi network: %s | Password: %s", apSsid, apPassword);
-        DEBUG_PRINTLN("Open a web browser and go to http://%s/ to view the HTML page", WiFi.softAPIP().toString().c_str());
-        Serial.printf("Actual AP SSID: %s\n\r", WiFi.softAPSSID().c_str());
-        // Bucle principal para manejar múltiples clientes
-        while (true)
-        {
-            WiFiClient client = server.available();
-            if (client)
-            {
-                DEBUG_PRINTLN("Client Connected");
-                
-                client.println("HTTP/1.1 200 OK");
-                client.println("Content-type:text/html");
-                client.println();
-                client.println(O2MonitorHtml);
-
-                // Procesar todas las solicitudes disponibles
-                while (client.connected() && client.available())
-                {
-                    String request = client.readStringUntil('\r');
-                    if (request.indexOf("/connect") != -1)
-                    {
-                       
-                        network = _GetValueFromRequest(request, "ssid_string");
-                        password = _GetValueFromRequest(request, "pwd_string");
-
-                        // Cierra la conexión después de procesar la solicitud
-                        // client.stop();
-
-                        return (network + PARAM_SEPARATOR_CHAR + password);
-                    }
-                }
-
-                // Descartar las líneas adicionales después de procesar la solicitud
-                while (client.available() && client.read() != -1) {}
-
-                // Cierra la conexión si no se procesó ninguna solicitud
-                client.stop();
-                DEBUG_PRINTLN("Client Disconnected");
-            }
-        }
-    }
-    else 
-    {
-        DEBUG_PRINTLN("CommandAccessPoint- Incorrect amount of parameters [%d]", (params.size() - 1));
-        return RESULT_ERROR;
-    }
-}
-
-// ---------------------------------------------------------------------------------------
-String _GetValueFromRequest(String data, String key)
-{
-    String value = "";
-    int index = data.indexOf(key + "=");
-    if (index != -1)
-    {
-        index += key.length() + 1;
-        int endIndex = data.indexOf("&", index);
-        
-        if (endIndex == -1)
-        {
-            endIndex = data.indexOf(" ", index);
-            if (endIndex == -1)
-            {
-                endIndex = data.length();
-            }
-        }
-        
-        value = data.substring(index, endIndex);
-        value.replace("+", " ");
-    }
-
-    return value;
 }
 
 // ---------------------------------------------------------------------------------------

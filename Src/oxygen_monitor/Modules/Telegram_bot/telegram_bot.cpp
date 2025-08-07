@@ -21,21 +21,21 @@
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout tBotTimeout;                         /**<  */
-static bool isTimeoutFinished;                      /**<  */
+static Timeout tBotTimeout;                         /**< Bot Timeout. */
+static bool isTimeoutFinished;                      /**< Variable to check if Bot Timeout is finished. */
 
-static Timeout alertTimeout;                        /**<  */
-static bool isAlertTimeoutFinished;                 /**<  */
+static Timeout alertTimeout;                        /**< Alert Timeout. */
+static bool isAlertTimeoutFinished;                 /**< Variable to check if Alert Timeout is finished. */
 
-static constexpr chrono::seconds alertDelay = 60s;  /**<  */
+static constexpr chrono::seconds alertDelay = 60s;  /**< Alert Delay. */
 
 /**
-* @brief 
+* @brief Callback function for Bot Timeout.
 */
 static void onTBotTimeoutFinishedCallback();
 
 /**
-* @brief 
+* @brief Callback function for Alert Timeout.
 */
 static void onAlertTimeoutFinishedCallback();
 
@@ -197,6 +197,9 @@ namespace Module {
 
 //=====[Implementations of private functions]===================================
 
+  /**
+  * @brief Internal init function. Does the actual initiation of the module.
+  */
   void TelegramBot::_init()
   {
     botLastUpdateId = 0;
@@ -219,10 +222,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief /start command. Register user in the system.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandStart(const ParametersArray &params, size_t paramCount)
   {
@@ -234,7 +237,7 @@ namespace Module {
       {
         result = _formatString(START_COMMAND_USER_REGISTERED_RESPONSE_STR, botLastMessage.fromName.c_str());
         // Debug:
-        for (int i = 0; i < userCount; ++i) { printf("Success! users ID:[ %s ]\r\n", userId[i].c_str()); }
+        // for (int i = 0; i < userCount; ++i) { printf("Success! users ID:[ %s ]\r\n", userId[i].c_str()); }
       } else {
         result = _formatString(START_COMMAND_USER_REGISTER_FAIL_RESPONSE_STR, botLastMessage.fromName.c_str());
       }
@@ -245,10 +248,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief /setunit command. Configure unit used by system.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandSetUnit(const ParametersArray &params, size_t paramCount)
   {
@@ -266,10 +269,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief /unit command. Display current unit.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandUnit(const ParametersArray &params, size_t paramCount)
   {
@@ -291,10 +294,10 @@ namespace Module {
   }  
 
   /**
-  * @brief 
-  * @param 
-  * @param 
-  * @return
+  * @brief /newtank command. Display message with information about tank registration.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandNewTank(const ParametersArray &params, size_t paramCount)
   {
@@ -308,10 +311,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @param 
-  * @return
+  * @brief /tank command. Sets a new tank in the system.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandTank(const ParametersArray &params, size_t paramCount)
   {
@@ -320,8 +323,6 @@ namespace Module {
       std::string tankType = params[2];
       std::string numTankCapacity = params[2];
       std::string numTankGasFlow = params[4];
-
-      printf("gflow param: %s\r\n",params[4].c_str());
       
       if (!Module::TankMonitor::getInstance().isUnitSet())
       {
@@ -364,14 +365,17 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief /status command. Display current information in the system and shows estimated time for tank to go low.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandTankStatus(const ParametersArray &params, size_t paramCount)
   {
     if (paramCount == 1) {
+      if (Module::TankMonitor::getInstance().getTankState() == TANK_LEVEL_LOW){
+        return STATUS_COMMAND_RESPONSE_ALERT_ON;
+      }
       if (Module::TankMonitor::getInstance().isTankRegistered()) {
         float pressure;
         float gasFlow;
@@ -402,10 +406,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @param 
-  * @return
+  * @brief /newgf command. Display message with information about new gas flow set up.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandNewGasFlow(const ParametersArray &params, size_t paramCount)
   {
@@ -419,10 +423,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief /gasflow command. Set a new gas flow.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandGasFlow(const ParametersArray &params, size_t paramCount)
   {
@@ -447,10 +451,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param params
-  * @param paramCount
-  * @return
+  * @brief /end command. Unregistered a user.
+  * @param params parameters received from user, already parsed.
+  * @param paramCount number of parameters received.
+  * @return Message to send to Telegram bot.
   */
   std::string TelegramBot::_commandEnd(const ParametersArray &params, size_t paramCount)
   {
@@ -471,14 +475,14 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @return
+  * @brief Registers a new user if not already registered.
+  * @param newUserId Telegram user ID to register.
+  * @return true if registration is successful, false otherwise.
   */
   bool TelegramBot::_registerUser(std::string newUserId)
   {
     bool userFound = _isUserIdValid(newUserId);
-    printf("userFound: %d\r\n", userFound);
+    // printf("userFound: %d\r\n", userFound);
 
     if (!userFound)
     {
@@ -493,9 +497,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @return
+  * @brief Unregisters an existing user.
+  * 
+  * @param oldUserId Telegram user ID to unregister.
+  * @return true if the user was removed successfully, false otherwise.
   */
   bool TelegramBot::_unregisterUser(std::string oldUserId)
   {
@@ -520,9 +525,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @return
+  * @brief Checks if a user ID is valid and registered.
+  * 
+  * @param fUserId User ID to verify.
+  * @return true if user is valid, false otherwise.
   */
   bool TelegramBot::_isUserIdValid(std::string fUserId)
   {
@@ -537,27 +543,11 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @return
-  */
-  std::string TelegramBot::_getUserId(std::string user) //TODO: Esta funcion esta al pedo?
-  {
-    UsersArray::iterator it = std::find(userId.begin(), userId.begin() + userCount, user);
-
-    if (it != userId.begin() + userCount)
-    {
-      return *it;
-    }
-
-    return "User not found";
-  }
-
-  /**
-  * @brief 
-  * @param 
-  * @param
-  * @return
+  * @brief Parses the message string into command and parameters.
+  * 
+  * @param message The input message string from Telegram.
+  * @param paramCount Reference to store number of parsed parameters.
+  * @return Array of parsed strings (command and arguments).
   */
   Module::TelegramBot::ParametersArray TelegramBot::_parseMessage(const std::string &message, size_t &paramCount)
   {
@@ -589,9 +579,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @param 
+  * @brief Sends a message to a specific chat ID.
+  * 
+  * @param chatId Target chat ID.
+  * @param message The message content to send.
   */
   void TelegramBot::_sendMessage(const std::string chatId, const std::string message)
   {
@@ -602,7 +593,9 @@ namespace Module {
   }
 
   /**
-  * @brief 
+  * @brief Requests the last message from Telegram using the API.
+  * 
+  * This method sends a POST request to retrieve updates from the bot's queue.
   */
   void TelegramBot::_requestLastMessage()
   {
@@ -612,10 +605,11 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param
-  * @param 
-  * @return
+  * @brief Extracts a message from a Telegram API response.
+  * 
+  * @param message Pointer to message structure to fill.
+  * @param response Raw JSON response string.
+  * @return true if a new message was parsed successfully, false otherwise.
   */
   bool TelegramBot::_getMessageFromResponse(telegram_Message *message, const std::string &response)
   {
@@ -683,9 +677,10 @@ namespace Module {
   }
 
   /**
-  * @brief
-  * @param 
-  * @return
+  * @brief Finds the command ID from a command string.
+  * 
+  * @param command The string received from the user.
+  * @return The corresponding command_t enum value, or ERROR_INVALID_COMMAND.
   */
   command_t TelegramBot::_findCommand(const std::string command)
   {
@@ -739,9 +734,10 @@ namespace Module {
   }
 
   /**
-  * @brief 
-  * @param 
-  * @return
+  * @brief Checks if a string is a valid numeric representation.
+  * 
+  * @param str The string to validate.
+  * @return true if numeric, false otherwise.
   */
   bool TelegramBot::_isStringNumeric(const std::string &str)
   {
@@ -757,10 +753,10 @@ namespace Module {
       if (isdigit(c)) {
         digit_found = true;
       } else if (c == '.') {
-          if (dot_found) return false;  // more than 1 '.' is not valid
+          if (dot_found) return false;
           dot_found = true;
       } else {
-          return false; // invalid character
+          return false;
       }
     }
     return digit_found;
@@ -768,6 +764,8 @@ namespace Module {
 
 
 } // namespace Module
+
+//===[Callback function implementation]====================s
 
 static void onTBotTimeoutFinishedCallback()
 {
@@ -778,29 +776,3 @@ static void onAlertTimeoutFinishedCallback()
 {
   isAlertTimeoutFinished = true;
 }
-
-  // Backup de funcion _parseMessage con Vector
-  // std::vector<std::string> TelegramBot::_parseMessage(const std::string &message)
-  // {
-  //   std::vector<std::string> params;
-  //   size_t start = 0;
-  //   size_t end = message.find(' ');
-
-  //   while (end != std::string::npos)
-  //   {
-  //       params.push_back(message.substr(start, end - start));
-  //       start = end + 1;
-  //       end = message.find(' ', start);
-  //   }
-
-  //   // Agregar el último parámetro (si existe)
-  //   if (start < message.length())
-  //   {
-  //       params.push_back(message.substr(start));
-  //   }
-  //   for (int i=0; i<params.size(); ++i) {
-  //     printf("params[%zu] = %s\n", i, params[i].c_str());
-  //   }
-    
-  //   return params;
-  // }

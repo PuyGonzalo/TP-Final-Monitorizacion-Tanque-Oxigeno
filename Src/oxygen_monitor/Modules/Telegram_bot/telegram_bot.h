@@ -41,7 +41,7 @@ namespace Module {
     public:
 
       /**
-      * @brief
+      * @brief Get the single instance of this module.
       */
       static TelegramBot& getInstance(){
         static TelegramBot instance(BOT_API_URL, BOT_TOKEN);
@@ -53,12 +53,12 @@ namespace Module {
       TelegramBot& operator=(const TelegramBot&) = delete;
 
       /**
-      * @brief
+      * @brief Initializes the Telegram Bot module.
       */
       static void init();
 
       /**
-      * @brief
+      * @brief Updates the Telegram Bot state machine.
       */
       void update();
 
@@ -126,8 +126,7 @@ namespace Module {
 
       bool _registerUser(std::string userId);
       bool _unregisterUser(std::string oldUserId);
-      bool _isUserIdValid(std::string tankId);
-      std::string _getUserId(std::string user);
+      bool _isUserIdValid(std::string fUserId);
       ParametersArray _parseMessage(const std::string &message, size_t &paramCount);
       void _sendMessage(const std::string chatId, const std::string message);
       void _requestLastMessage();
@@ -142,8 +141,8 @@ namespace Module {
       unsigned long botLastUpdateId;                /**< ID of the last processed update. */
       UsersArray userId;                            /**< List of registered user IDs. */
       int userCount;                                /**< Number of registered users. */
-      int broadcastIndex;                           /**<  */
-      int broadcastRetryCount;                      /**<  */
+      int broadcastIndex;                           /**< Index of current user in broadcast. */
+      int broadcastRetryCount;                      /**< Number of broadcast retries attempted. */
       telegram_Message botLastMessage;              /**< Last received message. */
       std::string botResponse;                      /**< Last response from API. */
       commandFunction functionsArray[NB_COMMANDS];  /**< Commands function array. */

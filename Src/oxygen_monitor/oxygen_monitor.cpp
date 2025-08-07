@@ -1,6 +1,6 @@
 /********************************************************************************
  * @file oxygen_monitor.cpp
- * @brief TODO: Completar
+ * @brief Oxygen monitoring control module.
  * @author Gonzalo Puy
  * @date Jun 2024
  *******************************************************************************/
@@ -19,9 +19,9 @@ namespace Module {
 
 //=====[Declaration and initialization of private global variables]============
 
-static Timeout o2MonitorTimeout;
-static bool isTimeoutFinished;
-static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 120s;
+static Timeout o2MonitorTimeout;                              /**< O2Monitor Timeout. */
+static bool isTimeoutFinished;                                /**< Variable to check if O2Monitor Timeout is finished. */
+static constexpr chrono::seconds O2_MONITOR_TIMEOUT = 120s;   /**< Timeout Delay. */
 
 //=====[Implementations of public methods]======================================
 
@@ -49,9 +49,14 @@ void OxygenMonitor::update()
 
 //=====[Implementations of private methods]==================================
 
+/**
+* @brief Constructor.
+*/
 OxygenMonitor::OxygenMonitor() {}
 
-
+/**
+* @brief Internal initialization routine.
+*/
 void Module::OxygenMonitor::_init()
 {
   
@@ -66,6 +71,9 @@ void Module::OxygenMonitor::_init()
 
 }
 
+/**
+* @brief Callback function triggered when the monitoring delay expires.
+*/
 void Module::OxygenMonitor::onO2MonitorTimeoutFinishedCallback()
 {
   isTimeoutFinished = true;

@@ -34,12 +34,12 @@ typedef enum COMMANDS {
 const char COMMAND_START_STR[]              = "/start";
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief Command string for unit configuration.
  */
 const char COMMAND_SET_UNIT_STR[]           = "/setunit";
 
 /**
- * @brief Command string for starting the bot session.
+ * @brief Command string for current unit informatio.
  */
 const char COMMAND_UNIT_STR[]               = "/unit";
 
@@ -74,7 +74,7 @@ const char COMMAND_GAS_FLOW_STR[]           = "/gasflow";
 const char COMMAND_END_STR[]                = "/end";
 
 /**
- * @brief 
+ * @brief Message displayed after /newtank command
  */
 const char NEW_TANK_COMMAND_RESPONSE_STR[]                        = "To register a new tank please use '/tank' command as follows:\
                                                                   \n\n/tank type <tank type> gflow <gas flow [L/min]>\
@@ -86,7 +86,7 @@ const char NEW_TANK_COMMAND_RESPONSE_STR[]                        = "To register
                                                                   \n/tank vol 50 gflow 2";
 
 /**
- * @brief 
+ * @brief Message displayed after /unit command
  */
 const char UNIT_COMMAND_RESPONSE_STR[]                            = "The current unit is: %s\
                                                                   \n\nTo set the unit please use '/setunit' command as follows:\
@@ -96,25 +96,25 @@ const char UNIT_COMMAND_RESPONSE_STR[]                            = "The current
                                                                   \n/setunit BAR";
 
 /**
- * @brief 
+ * @brief Success message displayed after setting up a unit.
  */
 const char SET_UNIT_COMMAND_RESPONSE_STR[]                        = "[Success!]\
                                                                     \n\nCorrectly set new unit.";
 
 /**
- * @brief 
+ * @brief Message displayed after a successful user registration
  */
 const char START_COMMAND_USER_REGISTERED_RESPONSE_STR[]           = "User registered correctly\nHello %s!";
 
 /**
- * @brief 
+ * @brief Error message displayed when trying to register a usar that is already registered.
  */
 const char START_COMMAND_USER_REGISTER_FAIL_RESPONSE_STR[]        = "[ERROR]\
                                                                     \nUser '%s' is already registered!\
                                                                     \nor user limit is reached.";
 
 /**
- * @brief 
+ * @brief Message displayed after /newgf command
  */
 const char NEW_GAS_FLOW_COMMAND_RESPONSE_STR[]                    = "To set a new gas flow value for the current tank please use '/gasflow' command as follows:\
                                                                     \n\n/gasflow <gas flow [L/min]>\
@@ -122,13 +122,20 @@ const char NEW_GAS_FLOW_COMMAND_RESPONSE_STR[]                    = "To set a ne
                                                                     \n/gasflow 1.25";
 
 /**
- * @brief 
+ * @brief Message displayed after a new gas flow is set.
  */
 const char GAS_FLOW_COMMAND_RESPONSE_STR[]                        = "[Success!]\
                                                                     \nNew gas flow seted up with the value: %.2f [L/min]";
 
 /**
- * @brief 
+ * @brief Message displayed after /status command and there is an alert going in the system.
+ */
+const char STATUS_COMMAND_RESPONSE_ALERT_ON[]                     = "[Tank Status]\
+                                                                    \nThere is an alert on the system\
+                                                                    \nCheck for previous alert messages.";
+
+/**
+ * @brief Message displayed after /status command and time left is more than an hour.
  */
 const char STATUS_COMMAND_RESPONSE_HOURS_STR[]                    = "[Tank Status]\
                                                                     \nCurrent preassure: %.2f [%s]\
@@ -136,19 +143,22 @@ const char STATUS_COMMAND_RESPONSE_HOURS_STR[]                    = "[Tank Statu
                                                                     \n\nThe tank will go low in approximately %d hs. and %d min.";
 
 /**
- * @brief 
+ * @brief Message displayed after /status command and time left is less than an hour.
  */
 const char STATUS_COMMAND_RESPONSE_MINUTES_STR[]                  = "[Tank Status]\
                                                                     \nCurrent preassure: %.2f [%s]\
                                                                     \nCurrent Gas Flow: %.2f [L/min]\
                                                                     \n\nThe tank will go low in approximately %d min.";
 
+/**
+ * @brief Warning message shown when registering a tank and there is no unit set.
+ */
 const char TANK_COMMAND_NO_UNIT_RESPONSE[]                        = "[Warning!]\
                                                                     \n\nNo measure unit is set for the system.\
                                                                     \nPlease use /unit command to know how to set the measure unit.";
 
 /**
- * @brief 
+ * @brief Success message displayed after registering a new tank by type.
  */
 const char TANK_COMMAND_TYPE_RESPONSE_STR[]                       = "[Success!]\
                                                                     \nNew Oxygen Tank registered:\
@@ -156,7 +166,7 @@ const char TANK_COMMAND_TYPE_RESPONSE_STR[]                       = "[Success!]\
                                                                     \nGas Flow: %.2f [L/min].\n";
 
 /**
- * @brief 
+ * @brief Success message displayed after registering a new tank by volume.
  */
 const char TANK_COMMAND_VOL_RESPONSE_STR[]                        = "[Success!]\
                                                                     \nNew Oxygen Tank registered:\
@@ -164,18 +174,18 @@ const char TANK_COMMAND_VOL_RESPONSE_STR[]                        = "[Success!]\
                                                                     \nGas Flow: %.2f [L/min]";
 
 /**
- * @brief 
+ * @brief Error message when tank parameters do not match the selected unit.
  */
 const char COMMAND_TANK_UNIT_ERROR[]                              = "[ERROR]\
                                                                     \n\nParameters used are not valid with the current unit.";
 
 /**
- * @brief 
+ * @brief Message confirming user was removed from system.
  */
 const char END_COMMAND_USR_REMOVED_RESPONSE_STR[]                 = "User removed correctly\nGoodbye %s!";
 
 /**
- * @brief 
+ * @brief Message shown when attempting to remove a non-registered user.
  */
 const char END_COMMAND_USR_NOTFOUND_RESPONSE_STR[]                = "User '%s' is not registered!\nUse '/start' command if you want to register";
 
@@ -195,19 +205,19 @@ const char ERROR_INVALID_USER_STR[]                               = "[ERROR]\nIn
 const char ERROR_INVALID_PARAMETERS_STR[]                         = "[ERROR]\nInvalid parameters for  [%s] command.";
 
 /**
- * @brief Error message for unregistered tank.
+ * @brief Error shown when user requests status but no tank is registered.
  */
 const char ERROR_NO_TANK_STR[]                                    = "[ERROR]\nThere is no tank regitered yet.\nPlease use '/newTank' command first.";
 
 /**
- * @brief 
+ * @brief Error message for /status command. Shown when it's not possible to calculate estimated time.
  */
 const char ERROR_STATUS_COMMAND_STR[]                             = "[Tank Status Error]\
                                                                     \nCan't get tank status.\
                                                                     \nPlease try again.";
 
 /**
- * @brief Alert message indicating the tank is low or empty.
+ * @brief Alert message indicating the tank is low.
  */
 const char ALERT_TANK_EMPTY[]                                     = "[ALERT]\nTank is low!";
 

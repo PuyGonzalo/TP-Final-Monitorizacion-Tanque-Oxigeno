@@ -23,7 +23,4 @@ const char RESULT_AP_WAITING[]        = "AP_WAITING";
 const char PARAM_SEPARATOR_CHAR       = '|';
 const char STOP_CHAR                  = '~';
 
-const char apSsid[]                   = "OxygenMonitor-AP";
-const char apPassword[]               = "O2-Monitor2025";
-
 #endif // COMMANDS_H

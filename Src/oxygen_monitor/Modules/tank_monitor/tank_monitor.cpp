@@ -15,7 +15,7 @@
 
 static Drivers::PressureGauge pressure_sensor(PRESS_SENSOR_PIN); /**< PressureGauge instance. */
 
-//=====[Implementations of public methods]============+++=========================
+//=====[Implementations of public methods]=======================================
 
 namespace Module {
 
@@ -32,57 +32,59 @@ namespace Module {
     printf("TankMonitor - Last reading: [%.2f]\n\r", last_reading);
     if (last_reading < threshold) {
 
-      tank_state = TANK_LEVEL_LOW;
+      tankState = TANK_LEVEL_LOW;
     } else {
-      tank_state = TANK_LEVEL_OK;
+      tankState = TANK_LEVEL_OK;
     }
     
     // Check if sensor is disconnected:
     if (last_reading == 0) {
-      tank_state = TANK_LEVEL_UNKNOWN;
+      tankState = TANK_LEVEL_UNKNOWN;
     }
   }
 
-  void TankMonitor::setNewTank(const std::string tankType, const int tankCapacity, const float tankGasFlow)
+  void TankMonitor::setNewTank(const std::string fTankType, const int fTankCapacity, const float tankGasFlow)
   {
-    tank_type = _findType(tankType);
-    tank_capacity = (float) tankCapacity;
-    gas_flow = tankGasFlow;
+    tankType = _findType(fTankType);
+    tankCapacity = (float) fTankCapacity;
+    gasFlow = tankGasFlow;
     tankRegistered = true;
   }
 
   void TankMonitor::setNewGasFlow(const float tankGasFlow)
   {
-    gas_flow = tankGasFlow;
+    gasFlow = tankGasFlow;
   }
 
   tank_state_t TankMonitor::getTankState()
   {
-    return tank_state;
+    return tankState;
   }
 
   float TankMonitor::getTankStatus(float &lastReading, float &currentGasFlow)
   {
     if (!tankRegistered) return -1;
-    if (gas_flow == 0) return -1;
+    if (gasFlow == 0) return -1;
     if (!pressure_sensor.isUnitSet()) return -1;
 
     Drivers::PressureGauge::unit_t unit = pressure_sensor.get_unit();
     pressure_sensor.update();
     lastReading = pressure_sensor.get_last_reading();
-    currentGasFlow = gas_flow;
+    currentGasFlow = gasFlow;
 
-    if (unit == Drivers::PressureGauge::UNIT_BAR && tank_type == TANK_TYPE_NONE) {
-      float count = tank_capacity > 20 ? (lastReading - BIG_TANK_RESIDUAL_BAR) : (lastReading - SMALL_TANK_RESIDUAL_BAR);
-      float availabeVolume = count * tank_capacity;
-      float time = availabeVolume / gas_flow;
+    if (unit == Drivers::PressureGauge::UNIT_BAR && tankType == TANK_TYPE_NONE) {
+      float count = tankCapacity > 20 ? (lastReading - BIG_TANK_RESIDUAL_BAR) : (lastReading - SMALL_TANK_RESIDUAL_BAR);
+      if (count < 0) return -1;
+      float availabeVolume = count * tankCapacity;
+      float time = availabeVolume / gasFlow;
 
       return time;
-    } else if (tank_type != TANK_TYPE_NONE){
+    } else if (tankType != TANK_TYPE_NONE){
       float factor = _getTypeFactor(unit);
       float count = unit == Drivers::PressureGauge::UNIT_PSI ? (lastReading - TANK_RESIDUAL_PSI) : (lastReading - TANK_RESIDUAL_BAR);
+      if (count < 0) return -1;
       float availabeVolume = count * factor;
-      float time = availabeVolume / gas_flow;
+      float time = availabeVolume / gasFlow;
 
       return time;
     } else {
@@ -139,21 +141,27 @@ namespace Module {
   //=====[Implementations of private methods]===================================
 
   /**
-  * @brief TODO: Completar
+  * @brief Internal init.
   */
   void TankMonitor::_init()
   {
     pressure_sensor.init();
 
-    tank_state = TANK_LEVEL_UNKNOWN;
-    gas_flow = 0;
-    tank_capacity = 0;
-    tank_type = TANK_TYPE_NONE;
+    tankState = TANK_LEVEL_UNKNOWN;
+    gasFlow = 0;
+    tankCapacity = 0;
+    tankType = TANK_TYPE_NONE;
     tankRegistered = false;
   }
 
   /**
-  * @brief TODO: Completar
+  * @brief Converts a string representation of a tank type to its corresponding enum.
+  *
+  * This helper function allows case-insensitive matching of known tank type strings
+  * ("D", "E", "M", "G", "H") to their respective `tank_type_t` enumeration values.
+  *
+  * @param fTankType String representing the tank type (e.g., "D", "e", "M").
+  * @return Corresponding `tank_type_t` value, or `TANK_TYPE_NONE` if the type is not recognized.
   */
   tank_type_t TankMonitor::_findType(const std::string fTankType)
   {
@@ -173,36 +181,43 @@ namespace Module {
   }
 
   /**
-  * @brief TODO: Completar
+  * @brief Returns the capacity conversion factor associated with the tank type.
+  *
+  * This function determines the appropriate factor used to convert pressure readings
+  * to remaining volume, based on the tank type and the currently configured pressure unit.
+  * If no valid type is set or the unit is unknown, it returns 0.
+  *
+  * @param unit Unit system in use (BAR or PSI).
+  * @return Tank factor in L/bar or L/psi, or 0 if invalid.
   */
   float TankMonitor::_getTypeFactor(Drivers::PressureGauge::unit_t unit)
   {
     if (unit == Drivers::PressureGauge::UNIT_BAR)
     {
-      if (tank_type == TANK_D ) {
+      if (tankType == TANK_D ) {
         return TANK_D_FACTOR_BAR;
-      } else if (tank_type == TANK_E) {
+      } else if (tankType == TANK_E) {
         return TANK_E_FACTOR_BAR;
-      } else if (tank_type == TANK_M) {
+      } else if (tankType == TANK_M) {
         return TANK_M_FACTOR_BAR;
-      } else if (tank_type == TANK_G) {
+      } else if (tankType == TANK_G) {
         return TANK_G_FACTOR_BAR;
-      } else if (tank_type == TANK_H) {
+      } else if (tankType == TANK_H) {
         return TANK_H_FACTOR_BAR;
       }
     }
 
     if (unit == Drivers::PressureGauge::UNIT_PSI)
     {
-      if (tank_type == TANK_D ) {
+      if (tankType == TANK_D ) {
         return TANK_D_FACTOR_PSI;
-      } else if (tank_type == TANK_E) {
+      } else if (tankType == TANK_E) {
         return TANK_E_FACTOR_PSI;
-      } else if (tank_type == TANK_M) {
+      } else if (tankType == TANK_M) {
         return TANK_M_FACTOR_PSI;
-      } else if (tank_type == TANK_G) {
+      } else if (tankType == TANK_G) {
         return TANK_G_FACTOR_PSI;
-      } else if (tank_type == TANK_H) {
+      } else if (tankType == TANK_H) {
         return TANK_H_FACTOR_PSI;
       }
     }
