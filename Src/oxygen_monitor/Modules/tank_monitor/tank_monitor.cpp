@@ -27,7 +27,7 @@ namespace Module {
   void TankMonitor::update()
   {
     pressure_sensor.update();
-    float last_reading = pressure_sensor.get_last_reading();
+    float last_reading = pressure_sensor.getLastReading();
     float threshold = pressure_sensor.get_unit() == Drivers::PressureGauge::UNIT_BAR ? PRESSURE_THRESHOLD_BAR : PRESSURE_THRESHOLD_PSI;
     printf("TankMonitor - Last reading: [%.2f]\n\r", last_reading);
     if (last_reading < threshold) {
@@ -37,7 +37,6 @@ namespace Module {
       tankState = TANK_LEVEL_OK;
     }
     
-    // Check if sensor is disconnected:
     if (last_reading == 0) {
       tankState = TANK_LEVEL_UNKNOWN;
     }
@@ -69,7 +68,7 @@ namespace Module {
 
     Drivers::PressureGauge::unit_t unit = pressure_sensor.get_unit();
     pressure_sensor.update();
-    lastReading = pressure_sensor.get_last_reading();
+    lastReading = pressure_sensor.getLastReading();
     currentGasFlow = gasFlow;
 
     if (unit == Drivers::PressureGauge::UNIT_BAR && tankType == TANK_TYPE_NONE) {

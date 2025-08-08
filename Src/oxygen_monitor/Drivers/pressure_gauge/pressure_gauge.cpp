@@ -10,7 +10,7 @@
 //====================[Implementations of public methods]========================
 
 namespace Drivers {
-  
+
   PressureGauge::PressureGauge(const PinName pin)
     : _pin(pin)
   {
@@ -45,7 +45,7 @@ namespace Drivers {
 
   }
 
-  float PressureGauge::get_last_reading()
+  float PressureGauge::getLastReading()
   {
     return lastReading;
   }

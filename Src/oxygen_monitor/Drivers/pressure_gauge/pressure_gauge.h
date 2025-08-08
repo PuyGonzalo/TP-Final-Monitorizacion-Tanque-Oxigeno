@@ -76,7 +76,7 @@ namespace Drivers {
     * @brief Returns the last updated pressure value in the configured unit.
     * @return float Last measured pressure.
     */
-    float get_last_reading();
+    float getLastReading();
 
     /**
     * @brief Sets the pressure unit for conversion and display.

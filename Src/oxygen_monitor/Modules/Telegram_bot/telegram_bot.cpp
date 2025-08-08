@@ -27,7 +27,10 @@ static bool isTimeoutFinished;                      /**< Variable to check if Bo
 static Timeout alertTimeout;                        /**< Alert Timeout. */
 static bool isAlertTimeoutFinished;                 /**< Variable to check if Alert Timeout is finished. */
 
-static constexpr chrono::seconds alertDelay = 60s;  /**< Alert Delay. */
+static constexpr chrono::seconds alertDelay = 60s;  /**< Alert Delay. */\
+
+static size_t broadcastTotal;
+std::array<std::string, MAX_USER_COUNT> broadcastList;
 
 /**
 * @brief Callback function for Bot Timeout.
@@ -65,6 +68,12 @@ namespace Module {
       case MONITOR:
       {
         if ( isAlertTimeoutFinished && (Module::TankMonitor::getInstance().getTankState() == TANK_LEVEL_LOW) ) {
+          
+          broadcastTotal = userCount;
+          for (size_t i = 0; i < userCount; i++) {
+              broadcastList[i] = userId[i];
+          }
+          broadcastIndex = 0;
 
           isAlertTimeoutFinished = false;
           alertTimeout.detach();
@@ -83,10 +92,18 @@ namespace Module {
       case SEND_ALERT:
       {
         if (!Drivers::WifiCom::getInstance().isBusy()) {
+
           std::string messegeToSend = ALERT_TANK_EMPTY;
           messegeToSend += "\n";
-          _sendMessage(userId[broadcastIndex], messegeToSend);
-          botState = userCount > 1 ? WAITING_BROADCAST_RESPONSE : WAITING_RESPONSE;
+          _sendMessage(broadcastList[broadcastIndex], messegeToSend);
+          // botState = userCount > 1 ? WAITING_BROADCAST_RESPONSE : WAITING_RESPONSE;
+          if (broadcastIndex == broadcastTotal - 1) {
+            botState = WAITING_RESPONSE;
+          } else {
+            tBotTimeout.detach();
+            tBotTimeout.attach(&onTBotTimeoutFinishedCallback, 8s);
+            botState = WAITING_BROADCAST_RESPONSE;
+          }
         }
       }
       break;
@@ -180,7 +197,7 @@ namespace Module {
           }
         } else if (Drivers::WifiCom::getInstance().getPostResponse(&botResponse)) {
           broadcastIndex++;
-          if (broadcastIndex >= userCount)
+          if (broadcastIndex >= broadcastTotal)
           {
             broadcastIndex = 0;
             broadcastRetryCount = 0;
