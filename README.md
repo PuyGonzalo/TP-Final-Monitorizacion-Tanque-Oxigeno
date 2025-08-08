@@ -72,7 +72,7 @@ You may also define a tank by volume directly.
 
 ## Documentation
 
-A more on depth documentation can be foud here (Spanish): [Link](https://docs.google.com/document/d/1Rf7b-09SAxiLqB1XF7JrPbkajfKJGvHUhdnzb8Eef8E/edit?usp=sharing)
+A more in depth documentation can be foud here (Spanish): [Link](https://docs.google.com/document/d/1Rf7b-09SAxiLqB1XF7JrPbkajfKJGvHUhdnzb8Eef8E/edit?usp=sharing)
 
 Also, the code is documented using Doxygen so It's possible to run Doxygen with the `Doxyfile` included in `Doc` folder.
 
